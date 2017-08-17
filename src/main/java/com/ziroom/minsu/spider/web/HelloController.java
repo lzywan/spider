@@ -46,7 +46,6 @@ public class HelloController {
     @RequestMapping("/test")
     @ResponseBody
     public XiaoZhuHouseInfo test(){
-
         LOGGER.info("this is info");
         LOGGER.debug("this is debug");
         LOGGER.error("this is error");
@@ -73,6 +72,12 @@ public class HelloController {
     @RequestMapping("/list2")
     @ResponseBody
     public List<XiaoZhuHouseInfo> list2(){
+        return xiaoZhuHouseService.findByPageV2(3,10);
+    }
+
+    @RequestMapping("/list3")
+    @ResponseBody
+    public List<XiaoZhuHouseInfo> list3(){
         return xiaoZhuHouseService.findByPageV2(3,10);
     }
 }

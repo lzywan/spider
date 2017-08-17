@@ -53,7 +53,7 @@ public class DatabaseConfiguration {
 	public DataSource slaveDataSource() {
 		return DruidDataSourceBuilder.create().build();
 	}
-	
+
 	@Bean
 	public AbstractRoutingDataSource roundRobinDataSouceProxy(@Qualifier("masterDataSource")DataSource master, @Qualifier("slaveDataSource") DataSource slave) {
 		ReadWriteSplitRoutingDataSource proxy = new ReadWriteSplitRoutingDataSource();

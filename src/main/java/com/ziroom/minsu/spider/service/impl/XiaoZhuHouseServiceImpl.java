@@ -1,6 +1,7 @@
 package com.ziroom.minsu.spider.service.impl;
 
 import com.github.pagehelper.PageHelper;
+import com.ziroom.minsu.spider.config.db.ReadOnly;
 import com.ziroom.minsu.spider.service.XiaoZhuHouseService;
 import com.ziroom.minsu.spider.domain.XiaoZhuHouseInfo;
 import com.ziroom.minsu.spider.mapper.XiaoZhuHouseInfoMapper;
@@ -34,6 +35,7 @@ public class XiaoZhuHouseServiceImpl implements XiaoZhuHouseService {
     @Autowired
     private XiaoZhuHouseInfoMapper xiaoZhuHouseInfoMapper;
 
+    @ReadOnly
     @Override
     public XiaoZhuHouseInfo findInfoById(int id) {
         return xiaoZhuHouseInfoMapper.selectByPrimaryKey(id);

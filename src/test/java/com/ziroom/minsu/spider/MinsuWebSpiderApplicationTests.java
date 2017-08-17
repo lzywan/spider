@@ -17,6 +17,7 @@ public class MinsuWebSpiderApplicationTests {
 	@Autowired
 	private XiaoZhuHouseService xiaoZhuHouseService;
 
+
 	@Test
 	public void testList(){
 		List<XiaoZhuHouseInfo> byPage = xiaoZhuHouseService.findByPage(4, 10);
