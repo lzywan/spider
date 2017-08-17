@@ -1,13 +1,6 @@
 package com.ziroom.minsu.spider.config.db;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInterceptor;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -16,15 +9,20 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * 数据源配置
@@ -35,6 +33,7 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
  */
 @Configuration
 @EnableAutoConfiguration
+@EnableAspectJAutoProxy
 @MapperScan(basePackages = "com.ziroom.minsu.spider.mapper", sqlSessionFactoryRef = "sqlSessionFactory")
 public class DatabaseConfiguration {
 	
