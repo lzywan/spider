@@ -8,9 +8,11 @@ import com.ziroom.minsu.spider.mapper.XiaoZhuHouseInfoMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -68,6 +70,17 @@ public class XiaoZhuHouseServiceImpl implements XiaoZhuHouseService {
         List<XiaoZhuHouseInfo> xiaoZhuHouseInfos = xiaoZhuHouseInfoMapper.selectByPage(pageNum,pageSize);
         LOGGER.info("参数findByPageV2 size={}",xiaoZhuHouseInfos.size());
         return xiaoZhuHouseInfos;
+    }
+
+    //@Scheduled(fixedRate = 5000)
+    @Override
+    public int update() {
+        LOGGER.info("定时计划");
+        XiaoZhuHouseInfo xiaoZhuHouseInfo = new XiaoZhuHouseInfo();
+        xiaoZhuHouseInfo.setId(38);
+        LocalDate today = LocalDate.now();
+        xiaoZhuHouseInfo.setHouseSn(today.toString());
+        return xiaoZhuHouseInfoMapper.updateByPrimaryKey(xiaoZhuHouseInfo);
     }
 
 

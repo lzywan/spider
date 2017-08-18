@@ -80,4 +80,6 @@ public class HelloController {
     public List<XiaoZhuHouseInfo> list3(){
         return xiaoZhuHouseService.findByPageV2(3,10);
     }
+
+
 }

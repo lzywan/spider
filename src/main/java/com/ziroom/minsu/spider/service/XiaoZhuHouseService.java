@@ -28,4 +28,6 @@ public interface XiaoZhuHouseService {
 
 
     List<XiaoZhuHouseInfo> findByPageV2(int page,int limit);
+
+    int update();
 }
