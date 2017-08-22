@@ -28,6 +28,14 @@
     ORDER BY id DESC
     LIMIT 100
   </select>
+
+  <select id="selectNetProxyIpByPage" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from t_net_proxy_ip_port
+    where is_del = 0
+    AND is_valid = 1
+  </select>
   
   <insert id="saveNetProxyIp" parameterType="com.ziroom.minsu.spider.domain.NetProxyIpPort" >
     INSERT IGNORE INTO t_net_proxy_ip_port
@@ -96,4 +104,39 @@
       </if>
     </trim>
   </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.ziroom.minsu.spider.domain.NetProxyIpPort" >
+    update t_net_proxy_ip_port
+    <set >
+      <if test="fid != null" >
+        fid = #{fid,jdbcType=VARCHAR},
+      </if>
+      <if test="proxyIp != null" >
+        proxy_ip = #{proxyIp,jdbcType=VARCHAR},
+      </if>
+      <if test="proxyPort != null" >
+        proxy_port = #{proxyPort,jdbcType=INTEGER},
+      </if>
+      <if test="isValid != null" >
+        is_valid = #{isValid,jdbcType=INTEGER},
+      </if>
+      <if test="validUsedCount != null" >
+        valid_used_count = #{validUsedCount,jdbcType=INTEGER},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastModifyDate != null" >
+        last_modify_date = #{lastModifyDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isDel != null" >
+        is_del = #{isDel,jdbcType=INTEGER},
+      </if>
+      <if test="ipSource != null" >
+        ip_source = #{ipSource,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
 </mapper>
