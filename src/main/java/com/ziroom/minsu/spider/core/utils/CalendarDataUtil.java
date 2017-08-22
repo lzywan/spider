@@ -53,24 +53,21 @@ import java.util.*;
  * @version 1.0
  */
 public class CalendarDataUtil {
-	
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(CalendarDataUtil.class);
 	
 	private static final Map<String, ThreadLocal<SimpleDateFormat>> dateFormatPool = new HashMap<String, ThreadLocal<SimpleDateFormat>>();
+
 	private static final Object dateFormatLock = new Object();
 	
-	private static Set<String> userAgentSet=null;
-    //设置线程的局部变量，不同线程不受影响
-    private static ThreadLocal<Set<String>> ipSetLocal = new ThreadLocal<>();
-	
+	private static final Set<String> userAgentSet= new HashSet<>();
+
     private static final String propertysperator = ":";
+
     private static final String linesperator =  Strings.LINE_SEPARATOR;
-    
-	
+
 	static{
-		userAgentSet=new HashSet<String>();		
-		
+		//初始化userAgent
 		userAgentSet.add("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1");
 		userAgentSet.add("Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11");
 		userAgentSet.add("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6");
@@ -89,48 +86,7 @@ public class CalendarDataUtil {
 		userAgentSet.add("Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.0 Safari/536.3");
 		userAgentSet.add("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24");
 		userAgentSet.add("Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24");
-		
-/*		ipSet=new HashSet<String>();
-//		ipSet.add("218.32.94.77:8080");
-		ipSet.add("121.199.28.155:80"); 
-		ipSet.add("222.173.56.27:8080");
-		ipSet.add("139.196.108.68:80");
-//		ipSet.add("70.88.182.181:80");
-		ipSet.add("221.226.82.130:8998"); */
-		
 	}
-
-    /**
-     * 初始化ip列表，从数据库中获取
-     * @param set
-     */
-
-	public static void initIpSet(Set<String> set){
-        ipSetLocal.set(set);
-    }
-
-    /**
-     * 获取ip集合
-     * @return
-     */
-    public static Set<String> getIpSet(){
-        return ipSetLocal.get();
-    }
-
-    /**
-     * 随机获取ip
-     * @param ipSet
-     * @return
-     */
-    public static String getRandomIp(Set<String> ipSet){
-        if (ipSet != null || ipSet.size() >1){
-            int index = new Random().nextInt(ipSet.size() - 1);
-            return (String) ipSet.toArray()[index];
-        }
-        return null;
-    }
-
-
 	
 	/**
 	 * 
@@ -143,11 +99,9 @@ public class CalendarDataUtil {
 	 * @return
 	 */
 	public static Calendar getCalendarData(InputStream in) {
-
 		if (in == null) {
 			return null;
 		}
-
 		try {
 			CalendarBuilder builder = new CalendarBuilder();
 			InputStreamReader reader = new InputStreamReader(in);			
@@ -155,7 +109,6 @@ public class CalendarDataUtil {
 		} catch (Exception e) {
 			LOGGER.info("转化日历对象失败，e={}", e);
 		}
-
 		return null;
 	}
 	
@@ -173,7 +126,6 @@ public class CalendarDataUtil {
 		if (calendar == null) {
 			return null;
 		}
-
 		List<CalendarDataVo> list = new ArrayList<>();
 		List<CalendarComponent> componentList = calendar.getComponents();
 		if (componentList != null && componentList.size() > 0) {
@@ -202,11 +154,9 @@ public class CalendarDataUtil {
 		if (calendarComponent == null) {
 			return null;
 		}
-
 		CalendarDataVo dataVo = new CalendarDataVo();
 
 		try {
-
 			PropertyList properties = calendarComponent.getProperties();
 			if (properties != null) {
 				for (Property property : properties) {
@@ -351,56 +301,14 @@ public class CalendarDataUtil {
 	 * @param urlStr
 	 * @return
 	 */
-	public static InputStream getInputStreamByUrl(String urlStr,String ipPort) {
+	public static InputStream getInputStreamByUrl(String urlStr,String ip,int port) {
 		if (urlStr==null||urlStr.length()==0) {
 			return null;
 		}
-		InputStream in = null;
-		boolean got = false;
-		int num=0;
-		int tryCount =5;
-		for (; ;) {
-			if ( got || num>tryCount) {
-				break;
-			}
-			try {
-				URL url = new URL(urlStr);
-				String ip = ipPort.substring(0, ipPort.indexOf(":"));
-				String port= ipPort.substring(ipPort.indexOf(":")+1);
-				
-				System.setProperty("http.maxRedirects", "50");
-				System.getProperties().setProperty("proxySet", "true");
-				System.getProperties().setProperty("http.proxyHost", ip);
-				System.getProperties().setProperty("http.proxyPort", port);
-				
-				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-				
-				String userAgent = getUserAgent();
-				if(userAgent!=null && userAgentSet.size()>0){
-					urlConnection.setRequestProperty("User-Agent", userAgent);
-				}
-				
-				urlConnection.setRequestMethod("GET");
-				urlConnection.setConnectTimeout(5000);
-				urlConnection.setReadTimeout(10000);
-				urlConnection.connect();
-				if(urlConnection.getResponseCode()==200){
-					got = true;
-				}
-				
-				if (got) {
-					in = urlConnection.getInputStream();
-				}
-				
-			} catch (Exception e) {
-				if(num==tryCount){
-					LOGGER.error("请求网络失败，url={},e={}", urlStr, e);
-				} 
-			}
-			num+=1;
-		}
-
-		return in;
+		Map<String,String> headerMap = new HashMap<>();
+		headerMap.put("User-Agent",getUserAgent());
+		String result = HttpClientUtil.sendProxyGet(urlStr, headerMap, ip, port);
+		return new ByteArrayInputStream(result.getBytes());
 	}
 	
 	/**
@@ -417,7 +325,6 @@ public class CalendarDataUtil {
 			int n = new Random().nextInt(userAgentSet.size()-1);
 			return (String) userAgentSet.toArray()[n];
 		}
-		
 		return null; 
 	}
 	
@@ -457,7 +364,6 @@ public class CalendarDataUtil {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(originalInputStream));
 			StringBuilder resultStringBuilder = new StringBuilder();
-			
 			String line=null;  
 	        while ((line = br.readLine()) != null) {
 	        	line = line.trim();
@@ -693,27 +599,7 @@ public class CalendarDataUtil {
 		public static final String  PROPERTY_UID_HOSTNAME="ziroom.com";
 		
 		public static final String  PROPERTY_PRODID="--//ziroom Inc//Hosting Calendar 1.0.0//EN";
-		
-		/**
-		 * 
-		 * 获取属性名称
-		 *
-		 * @author zl
-		 * @created 2017年4月12日 下午6:12:05
-		 *
-		 * @return
-		 */
-		public Set<String> getPropertyNames(){
-			Set<String> set = new HashSet<>();
-			set.add(PROPERTY_UID);
-			set.add(PROPERTY_DTSTART);
-			set.add(PROPERTY_DTEND);
-			set.add(PROPERTY_DESCRIPTION);
-			set.add(PROPERTY_SUMMARY);
-			set.add(PROPERTY_LOCATION); 			
-			return set;
-		}
-		
+
 	}
 
 	/**
@@ -740,7 +626,7 @@ public class CalendarDataUtil {
 	public static Date transDayDate(String dateStr){
 		Date date = null;
 		for (String dayFmt : getDateFormatDayList()) {
-			try { 
+			try {
 				date = getDateFormat(dayFmt).parse(dateStr);
 				break;
 			} catch (Exception e) {
@@ -749,23 +635,7 @@ public class CalendarDataUtil {
 		}
 		return date;
 	}
-	
-	/**
-	 * 
-	 * 时间格式
-	 *
-	 * @author zl
-	 * @created 2017年6月29日 上午10:53:34
-	 *
-	 * @return
-	 */
-	public static Set<String> getDateFormatTimeList(){
-		Set<String> set = new HashSet<>();
-		for (String dayFmt : getDateFormatDayList()) {
-			set.add(dayFmt+" HH:mm:ss");
-		}
-		return set;
-	}
+
 	/**
 	 * 
 	 * 日期格式
@@ -780,7 +650,6 @@ public class CalendarDataUtil {
 		set.add("yyyy-MM-dd");
 		set.add("yyyyMMdd");
 		set.add("yyyy/MM/dd");
-		
 		return set;
 	}
 	
@@ -819,11 +688,21 @@ public class CalendarDataUtil {
 
         CalendarDataUtil.initIpSet(ipSet);
         String randomIp = CalendarDataUtil.getRandomIp(ipSet);*/
-        String randomIp = "202.202.90.20:8080";
+     /* String randomIp = "202.202.90.20:8080";
 //        InputStream in = getInputStreamByUrl("https://www.airbnbchina.cn/calendar/ical/17539939.ics?s=0ef6c764be261e8e22776eaddb63e226",randomIp);
         InputStream in = getInputStreamByUrl("https://www.airbnbchina.cn/calendar/ical/16582865.ics?s=f048109d9e534ca065555628ada9b5c6",randomIp);
-        List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(in)));
-        System.out.println(JSONObject.toJSONString(list));
+
+       List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(in)));
+        System.out.println(JSONObject.toJSONString(list));*/
+
+
+        Map<String,String> headerMap = new HashMap<>();
+        headerMap.put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1");
+		String s = HttpClientUtil.sendProxyGet("https://www.airbnbchina.cn/calendar/ical/17539939.ics?s=0ef6c764be261e8e22776eaddb63e226", headerMap, "112.86.90.47", 8118);
+		System.err.println(s);
+		List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(new ByteArrayInputStream(s.getBytes()))));
+		System.out.println(JSONObject.toJSONString(list));
+
 
 	}
 	

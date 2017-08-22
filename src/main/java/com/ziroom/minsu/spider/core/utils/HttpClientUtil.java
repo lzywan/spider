@@ -9,14 +9,28 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,17 +55,6 @@ public class HttpClientUtil {
 
 
     /**
-     * 不带头信息的get请求
-     * @author jixd
-     * @created 2017年08月18日 15:07:14
-     * @param
-     * @return
-     */
-    public static String sendGet(String url){
-        return sendGet(url,null,null,0);
-    }
-
-    /**
      * 有代理的请求
      * @author jixd
      * @created 2017年08月18日 16:06:27
@@ -59,7 +62,32 @@ public class HttpClientUtil {
      * @return
      */
     public static String sendProxyGet(String url,Map<String,String> headerMap,String ip,int port){
-        return sendGet(url,headerMap,ip,port);
+        try {
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpGet httpGet = new HttpGet(url);
+            initHeader(httpGet,headerMap);
+            httpGet.setConfig(getRequestConfig(ip,port));
+            CloseableHttpResponse response = null;
+            try {
+                response = httpclient.execute(httpGet);
+                HttpEntity entity = response.getEntity();
+                return EntityUtils.toString(entity, "UTF-8");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (response != null) {
+                    try {
+                        response.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return null;
+        }catch (Exception e){
+            LOGGER.error("sendProxyGet error={}",e);
+        }
+        return null;
     }
 
     /**
@@ -70,12 +98,12 @@ public class HttpClientUtil {
      * @author jixd
      * @created 2017年08月18日 14:42:55
      */
-    public static String sendGet(String url, Map<String, String> headerMap,String ip,int port) {
+    public static String sendGet(String url, Map<String, String> headerMap) {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(url);
         initHeader(httpGet,headerMap);
         //设置请求配置
-        httpGet.setConfig(getRequestConfig(ip,port));
+        httpGet.setConfig(getRequestConfig(null,0));
         CloseableHttpResponse response = null;
         try {
             response = httpclient.execute(httpGet);
@@ -141,7 +169,7 @@ public class HttpClientUtil {
     private static void initHeader(HttpRequestBase httpRequestBase,Map<String, String> headerMap){
         if (headerMap != null){
             for (String key : headerMap.keySet()){
-                httpRequestBase.addHeader(key,headerMap.get(key));
+                httpRequestBase.setHeader(key,headerMap.get(key));
             }
         }
     }
@@ -159,7 +187,7 @@ public class HttpClientUtil {
                 .setConnectTimeout(5000)
                 .setMaxRedirects(50)
                 .setConnectionRequestTimeout(5000);
-        if (ip != null){
+        if (ip != null && !"".equals(ip)){
             HttpHost httpHost = new HttpHost(ip,port);
             builder.setProxy(httpHost);
         }
@@ -167,6 +195,47 @@ public class HttpClientUtil {
     }
 
 
+    public static void main(String[] args) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 
 
+        SSLContext context = SSLContexts.custom()
+                .loadTrustMaterial(TrustSelfSignedStrategy.INSTANCE)
+                .build();
+
+
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                .register("https", new SSLConnectionSocketFactory(context, NoopHostnameVerifier.INSTANCE))
+                .build();
+
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
+
+        HttpHost proxy = new HttpHost("60.255.186.169", 8888);
+        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+
+
+       /* CloseableHttpClient httpclient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setRoutePlanner(routePlanner)
+                //.setProxy(new HttpHost("60.255.186.169", 8888))
+                .build();*/
+        CloseableHttpClient httpclient = HttpClients.custom().build();
+        HttpGet httpget = new HttpGet("http://www.ziroom.com/");
+        // Request configuration can be overridden at the request level.
+        // They will take precedence over the one set at the client level.
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setSocketTimeout(5000)
+                .setConnectTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .setProxy(new HttpHost("112.86.90.47",8118))
+                .build();
+        httpget.setConfig(requestConfig);
+        httpget.addHeader("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.9 Safari/536.5");
+        CloseableHttpResponse response = httpclient.execute(httpget);
+        HttpEntity entity = response.getEntity();
+        System.out.println(EntityUtils.toString(entity, "UTF-8"));
+
+
+
+    }
 }
