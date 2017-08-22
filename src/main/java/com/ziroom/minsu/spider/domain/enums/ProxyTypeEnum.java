@@ -1,4 +1,4 @@
-package com.ziroom.minsu.spider.proxyip.entity.enums;
+package com.ziroom.minsu.spider.domain.enums;
 
 /**
  * 

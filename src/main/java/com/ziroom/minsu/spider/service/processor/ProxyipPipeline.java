@@ -1,6 +1,7 @@
-package com.ziroom.minsu.spider.proxyip.processor;
+package com.ziroom.minsu.spider.service.processor;
 
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
+import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

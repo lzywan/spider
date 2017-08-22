@@ -1,4 +1,4 @@
-package com.ziroom.minsu.spider.proxyip.processor;
+package com.ziroom.minsu.spider.service.processor;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;

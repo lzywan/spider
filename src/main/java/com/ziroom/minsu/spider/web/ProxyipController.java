@@ -1,7 +1,8 @@
-package com.ziroom.minsu.spider.proxyip.controller;
+package com.ziroom.minsu.spider.web;
 
 
-import com.ziroom.minsu.spider.proxyip.service.ProxyipService;
+
+import com.ziroom.minsu.spider.service.ProxyIpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class ProxyipController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProxyipController.class);
 	
 	@Autowired
-    private ProxyipService proxyipService;
+    private ProxyIpService proxyipService;
 	
 	/**
 	 * 
