@@ -1,12 +1,13 @@
-package com.ziroom.minsu.spider.proxyip.service;
+package com.ziroom.minsu.spider.service.impl;
 
 import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
+import com.ziroom.minsu.spider.domain.enums.ProxyipSiteEnum;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
-import com.ziroom.minsu.spider.proxyip.entity.enums.ProxyipSiteEnum;
-import com.ziroom.minsu.spider.proxyip.processor.PageProcessorFactory;
-import com.ziroom.minsu.spider.proxyip.processor.ProxyipPipeline;
-import com.ziroom.minsu.spider.proxyip.processor.SimpleHttpClientDownloader;
+import com.ziroom.minsu.spider.service.ProxyIpService;
+import com.ziroom.minsu.spider.service.processor.PageProcessorFactory;
+import com.ziroom.minsu.spider.service.processor.ProxyipPipeline;
+import com.ziroom.minsu.spider.service.processor.SimpleHttpClientDownloader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,6 @@ import us.codecraft.webmagic.utils.ProxyUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 
 
 /**
@@ -38,9 +38,9 @@ import java.util.List;
  * @version 1.0
  */
 @Service
-public class ProxyipService {
+public class ProxyipServiceImpl implements ProxyIpService{
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ProxyipService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProxyipServiceImpl.class);
 	
 	@Autowired
 	private NetProxyIpPortMapper netProxyIpPortMapper;
@@ -62,6 +62,7 @@ public class ProxyipService {
 	 * @created 2017年7月10日 下午7:21:29
 	 *
 	 */
+	@Override
 	public void runAsyncSpider() {
 
 		boolean started = false;

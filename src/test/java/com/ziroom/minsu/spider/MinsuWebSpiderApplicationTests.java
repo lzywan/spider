@@ -1,7 +1,7 @@
 package com.ziroom.minsu.spider;
 
 import com.ziroom.minsu.spider.domain.XiaoZhuHouseInfo;
-import com.ziroom.minsu.spider.proxyip.processor.ProxyIpPipelineService;
+import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import com.ziroom.minsu.spider.service.XiaoZhuHouseService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,12 +36,12 @@ public class MinsuWebSpiderApplicationTests {
 		byPage.forEach(System.out::println);
 	}
 
-	@Test
-	public void testAsync(){
-		for (int i = 0; i < 100; i++) {
-			proxyipPipeline.doTask(i);
-		}
-		LOGGER.info("finished.");
-	}
+//	@Test
+//	public void testAsync(){
+//		for (int i = 0; i < 100; i++) {
+//			proxyipPipeline.doTask(i);
+//		}
+//		LOGGER.info("finished.");
+//	}
 
 }

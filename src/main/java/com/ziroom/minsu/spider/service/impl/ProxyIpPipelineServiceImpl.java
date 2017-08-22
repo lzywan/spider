@@ -1,7 +1,8 @@
-package com.ziroom.minsu.spider.proxyip.processor;
+package com.ziroom.minsu.spider.service.impl;
 
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
+import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import us.codecraft.webmagic.ResultItems;
 
 import java.io.IOException;
@@ -35,9 +37,9 @@ import java.util.UUID;
  * @version 1.0
  */
 @Service
-public class ProxyIpPipelineService {
+public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ProxyIpPipelineService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProxyIpPipelineServiceImpl.class);
 
 	private static final String airbnbUrl = "https://www.airbnbchina.cn/";
 
@@ -52,6 +54,8 @@ public class ProxyIpPipelineService {
 	 * @return:
 	 */
 	@Async
+	@Transactional
+	@Override
 	public void asyncCheckProxyAndSave(ResultItems resultItems){
 		List<NetProxyIpPort> netIps = resultItems.get("netIps");
 		try {
