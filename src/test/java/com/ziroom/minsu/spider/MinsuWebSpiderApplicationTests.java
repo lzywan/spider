@@ -1,7 +1,7 @@
 package com.ziroom.minsu.spider;
 
 import com.ziroom.minsu.spider.domain.XiaoZhuHouseInfo;
-import com.ziroom.minsu.spider.proxyip.processor.ProxyipPipeline;
+import com.ziroom.minsu.spider.proxyip.processor.ProxyIpPipelineService;
 import com.ziroom.minsu.spider.service.XiaoZhuHouseService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +27,7 @@ public class MinsuWebSpiderApplicationTests {
 	private XiaoZhuHouseService xiaoZhuHouseService;
 
 	@Autowired
-	private ProxyipPipeline proxyipPipeline;
+	private ProxyIpPipelineService proxyipPipeline;
 
 
 	@Test
