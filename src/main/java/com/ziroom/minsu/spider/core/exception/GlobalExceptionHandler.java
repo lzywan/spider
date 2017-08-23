@@ -54,8 +54,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(value = ServiceException.class)
     @ResponseBody
-    public Result<String> jsonErrorHandler(HttpServletRequest req, ServiceException e) throws Exception {
-        Result<String> r = new Result<>();
+    public Result jsonErrorHandler(HttpServletRequest req, ServiceException e) throws Exception {
+        Result r = new Result();
         r.setMessage(e.getMessage());
         r.setCode(ResultCode.INTERNAL_SERVER_ERROR.code);
         r.setData(e.getMessage());

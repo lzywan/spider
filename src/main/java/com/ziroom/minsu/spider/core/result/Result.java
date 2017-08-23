@@ -2,6 +2,8 @@ package com.ziroom.minsu.spider.core.result;
 
 import com.alibaba.fastjson.JSON;
 
+import java.io.Serializable;
+
 /**
  * 统一结果统计响应
  * @author jixd
@@ -9,10 +11,17 @@ import com.alibaba.fastjson.JSON;
  * @param
  * @return
  */
-public class Result<T> {
+public class Result implements Serializable {
+
+    private static final long serialVersionUID = -494849412079027242L;
+
     private int code;
     private String message;
-    private T data;
+    private Object data;
+
+    public Result() {
+        code = ResultCode.SUCCESS.code;
+    }
 
     public Result setCode(ResultCode resultCode) {
         this.code = resultCode.code;
@@ -41,7 +50,7 @@ public class Result<T> {
         return data;
     }
 
-    public Result setData(T data) {
+    public Result setData(Object data) {
         this.data = data;
         return this;
     }

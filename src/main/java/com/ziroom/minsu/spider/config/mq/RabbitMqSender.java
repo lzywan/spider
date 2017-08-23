@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  * @since 1.0
  */
 @Component
-public class Sender {
+public class RabbitMqSender {
 
     @Autowired
     private AmqpTemplate template;
