@@ -1,7 +1,6 @@
-package com.ziroom.minsu.spider.core.thread;
+package com.ziroom.minsu.spider.config.thread;
 
 
-import com.ziroom.minsu.spider.config.thread.TaskThreadPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;

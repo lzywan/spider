@@ -29,6 +29,14 @@
     LIMIT 100
   </select>
 
+  <select id="countNetProxyIp" resultType="int" >
+    select
+    count(*)
+    from t_net_proxy_ip_port
+    where is_del = 0
+    AND is_valid = 1
+  </select>
+
   <select id="selectNetProxyIpByPage" resultMap="BaseResultMap" >
     select
     <include refid="Base_Column_List" />
@@ -122,12 +130,6 @@
       </if>
       <if test="validUsedCount != null" >
         valid_used_count = #{validUsedCount,jdbcType=INTEGER},
-      </if>
-      <if test="createDate != null" >
-        create_date = #{createDate,jdbcType=TIMESTAMP},
-      </if>
-      <if test="lastModifyDate != null" >
-        last_modify_date = #{lastModifyDate,jdbcType=TIMESTAMP},
       </if>
       <if test="isDel != null" >
         is_del = #{isDel,jdbcType=INTEGER},

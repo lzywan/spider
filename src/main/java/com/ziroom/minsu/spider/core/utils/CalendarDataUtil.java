@@ -32,12 +32,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * <p>日历工具类</p>
@@ -698,7 +709,7 @@ public class CalendarDataUtil {
 
         Map<String,String> headerMap = new HashMap<>();
         headerMap.put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1");
-		String s = HttpClientUtil.sendProxyGet("https://www.airbnbchina.cn/calendar/ical/17539939.ics?s=0ef6c764be261e8e22776eaddb63e226", headerMap, "112.86.90.47", 8118);
+		String s = HttpClientUtil.sendProxyGet("https://www.airbnbchina.cn/calendar/ical/17539939.ics?s=0ef6c764be261e8e22776eaddb63e226", headerMap, "116.62.11.138", 3128);
 		System.err.println(s);
 		List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(new ByteArrayInputStream(s.getBytes()))));
 		System.out.println(JSONObject.toJSONString(list));

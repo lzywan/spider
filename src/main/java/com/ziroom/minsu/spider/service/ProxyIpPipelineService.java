@@ -21,4 +21,5 @@ public interface ProxyIpPipelineService {
 
 	void asyncCheckProxyAndSave(ResultItems resultItems);
 
+	void checkProxyIpAvailable();
 }
