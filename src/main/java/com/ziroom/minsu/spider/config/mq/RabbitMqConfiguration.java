@@ -1,6 +1,9 @@
 package com.ziroom.minsu.spider.config.mq;
 
+import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,12 +24,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMqConfiguration {
 
-    final static String queueName = "minsu.order.syncLock";
+    final static String queueName = "minsu_order_syncLock";
 
     @Bean
     Queue queue() {
-        return new Queue(queueName, false);
+        return new Queue(queueName);
     }
+
 
 
 }

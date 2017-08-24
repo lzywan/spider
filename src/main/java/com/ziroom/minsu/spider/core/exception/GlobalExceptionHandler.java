@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
     public Result jsonErrorHandler(HttpServletRequest req, ServiceException e) throws Exception {
         Result r = new Result();
         r.setMessage(e.getMessage());
-        r.setCode(ResultCode.INTERNAL_SERVER_ERROR.code);
+        r.setStatus(ResultCode.INTERNAL_SERVER_ERROR.code);
         r.setData(e.getMessage());
         return r;
     }

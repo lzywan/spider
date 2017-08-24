@@ -1,6 +1,8 @@
 package com.ziroom.minsu.spider.core.result;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.io.Serializable;
 
@@ -15,25 +17,25 @@ public class Result implements Serializable {
 
     private static final long serialVersionUID = -494849412079027242L;
 
-    private int code;
+    private int status;
     private String message;
     private Object data;
 
     public Result() {
-        code = ResultCode.SUCCESS.code;
+        status = ResultCode.SUCCESS.code;
     }
 
-    public Result setCode(ResultCode resultCode) {
-        this.code = resultCode.code;
+    public Result setStatus(ResultCode resultCode) {
+        this.status = resultCode.code;
         return this;
     }
 
-    public int getCode() {
-        return code;
+    public int getStatus() {
+        return status;
     }
 
-    public Result setCode(int code) {
-        this.code = code;
+    public Result setStatus(int code) {
+        this.status = code;
         return this;
     }
 
@@ -55,8 +57,11 @@ public class Result implements Serializable {
         return this;
     }
 
+
+
     @Override
     public String toString() {
-        return JSON.toJSONString(this);
+        return JSONObject.toJSONString(this, SerializerFeature.WriteMapNullValue);
     }
+
 }

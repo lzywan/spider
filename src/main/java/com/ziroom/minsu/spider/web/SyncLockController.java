@@ -4,7 +4,6 @@ import com.ziroom.minsu.spider.config.mq.RabbitMqSender;
 import com.ziroom.minsu.spider.core.result.Result;
 import com.ziroom.minsu.spider.core.result.ResultCode;
 import com.ziroom.minsu.spider.core.utils.CalendarDataUtil;
-import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
 import com.ziroom.minsu.spider.domain.dto.HouseRelateDto;
 import com.ziroom.minsu.spider.domain.vo.CalendarDataVo;
 import com.ziroom.minsu.spider.domain.vo.CalendarTimeDataVo;
@@ -12,11 +11,12 @@ import com.ziroom.minsu.spider.domain.vo.TimeDataVo;
 import com.ziroom.minsu.spider.service.AbHouseStatusService;
 import com.ziroom.minsu.spider.service.ProxyIpService;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -39,6 +39,8 @@ import java.util.List;
 @RestController("/syncLock")
 public class SyncLockController {
 
+    private static Logger LOGGER = LoggerFactory.getLogger(SyncLockController.class);
+
     @Autowired
     private AbHouseStatusService abHouseStatusService;
 
@@ -59,29 +61,35 @@ public class SyncLockController {
     public Result syncSingleHouse(HouseRelateDto houseRelateDto){
         Result result = new Result();
         if (houseRelateDto == null){
-            return result.setCode(ResultCode.FAIL).setMessage("参数为空");
+            return result.setStatus(ResultCode.FAIL).setMessage("参数为空");
         }
         if (StringUtils.isEmpty(houseRelateDto.getHouseFid())){
-            return result.setCode(ResultCode.FAIL).setMessage("房源fid为空");
+            return result.setStatus(ResultCode.FAIL).setMessage("房源fid为空");
         }
         if (houseRelateDto.getRentWay() == null){
-            return result.setCode(ResultCode.FAIL).setMessage("出租方式为空");
+            return result.setStatus(ResultCode.FAIL).setMessage("出租方式为空");
         }
         if (StringUtils.isEmpty(houseRelateDto.getCalendarUrl())){
-            return result.setCode(ResultCode.FAIL).setMessage("日历url为空");
+            return result.setStatus(ResultCode.FAIL).setMessage("日历url为空");
         }
         //开始读取日历数据
 
-        String ip = "60.255.186.169";
-        int port = 8888;
+        String ip = "112.86.90.47";
+        int port = 8118;
+        saveHouseCalendarDateAndSendMq(houseRelateDto, ip, port);
+        LOGGER.info("返回结果");
+        return result;
+    }
 
 
 
+    @Async
+    public void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, String ip, int port) {
+        Result result = new Result();
         //获取到日历原数据
         List<CalendarDataVo> calendarDataVos = CalendarDataUtil.transStreamToListVo(CalendarDataUtil.getInputStreamByUrl(houseRelateDto.getCalendarUrl(), ip, port));
 
         abHouseStatusService.saveUpdateAbHouse(calendarDataVos,houseRelateDto.getAbSn());
-
         //重新解析数据 放入mq中消费
         CalendarTimeDataVo calendarTimeDataVo = new CalendarTimeDataVo();
         calendarTimeDataVo.setHouseFid(houseRelateDto.getHouseFid());
@@ -96,13 +104,12 @@ public class SyncLockController {
         }
         calendarTimeDataVo.setDateList(timeList);
         result.setData(calendarTimeDataVo);
+        LOGGER.info("异步任务执行完成");
         //mq发送
         rabbitMqSender.send(result);
-        //清空数据返回 ，把数据放到mq中
-        result.setData(null);
-
-        return result;
     }
+
+
 
 
 }

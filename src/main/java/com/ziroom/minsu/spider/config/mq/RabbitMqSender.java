@@ -1,5 +1,7 @@
 package com.ziroom.minsu.spider.config.mq;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.ziroom.minsu.spider.core.result.Result;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,7 @@ public class RabbitMqSender {
     private AmqpTemplate template;
 
     public void send(Result msg){
-        template.convertAndSend(RabbitMqConfiguration.queueName,msg);
+        template.convertAndSend(RabbitMqConfiguration.queueName, JSONObject.toJSONString(msg, SerializerFeature.WriteMapNullValue));
     }
 
 }

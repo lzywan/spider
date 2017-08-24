@@ -24,10 +24,10 @@ import org.springframework.stereotype.Component;
 public class RabbitMqReceiver {
 
 
-    @RabbitListener(queues = RabbitMqConfiguration.queueName)
-    @RabbitHandler
-    public void receiveMessage(Result result) {
-        System.out.println("Received <" + JSONObject.toJSONString(result) + ">");
+    /*@RabbitListener(queues = RabbitMqConfiguration.queueName)
+    @RabbitHandler*/
+    public void receiveMessage(String msg) {
+        System.out.println("Received <" + msg + ">");
 
     }
 }
