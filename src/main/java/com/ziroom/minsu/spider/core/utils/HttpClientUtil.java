@@ -1,5 +1,6 @@
 package com.ziroom.minsu.spider.core.utils;
 
+import com.ziroom.minsu.spider.domain.constant.HttpConstant;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
@@ -183,10 +184,10 @@ public class HttpClientUtil {
      */
     private static RequestConfig getRequestConfig(String ip,int port){
         RequestConfig.Builder builder = RequestConfig.custom()
-                .setSocketTimeout(5000)
-                .setConnectTimeout(5000)
-                .setMaxRedirects(50)
-                .setConnectionRequestTimeout(5000);
+                .setSocketTimeout(HttpConstant.socket_time_out)
+                .setConnectTimeout(HttpConstant.connect_time_out)
+                .setMaxRedirects(HttpConstant.max_redirects)
+                .setConnectionRequestTimeout(HttpConstant.connection_request_time_out);
         if (ip != null && !"".equals(ip)){
             HttpHost httpHost = new HttpHost(ip,port);
             builder.setProxy(httpHost);
@@ -205,14 +206,8 @@ public class HttpClientUtil {
         boolean flag = false;
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(url);
-        RequestConfig.Builder builder = RequestConfig.custom()
-                .setSocketTimeout(5000)
-                .setConnectTimeout(5000)
-                .setMaxRedirects(50)
-                .setConnectionRequestTimeout(5000);
-        HttpHost httpHost = new HttpHost(ip,port);
-        builder.setProxy(httpHost);
-        httpGet.setConfig(builder.build());
+        RequestConfig requestConfig = getRequestConfig(ip,port);
+        httpGet.setConfig(requestConfig);
         CloseableHttpResponse response = null;
         try {
             response = httpclient.execute(httpGet);
@@ -221,7 +216,7 @@ public class HttpClientUtil {
                 flag = true;
             }
         } catch (IOException e) {
-            LOGGER.info("该代理ip地址不可用,ip:{},port:{}",ip,port);
+            LOGGER.info("【checkProxyIp】该代理ip地址不可用,ip:{},port:{}",ip,port);
         } finally {
             if (response != null) {
                 try {

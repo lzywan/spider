@@ -8,13 +8,15 @@ package com.ziroom.minsu.spider.service;/*
  * </PRE>
  * 
  * @Author lusp
- * @Date Create in 2017年08月 22日 17:12
+ * @Date Create in 2017年08月 23日 19:54
  * @Version 1.0
  * @Since 1.0
  */
 
-public interface CheckProxyIpJobService {
+import java.util.concurrent.Future;
 
-    void checkProxyIpAvailable();
+public interface AsyncService {
+
+    Future<Boolean> checkProxyIp(String url, String ip, int port);
 
 }

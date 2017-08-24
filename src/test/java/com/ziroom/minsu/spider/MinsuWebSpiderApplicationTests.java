@@ -1,6 +1,8 @@
 package com.ziroom.minsu.spider;
 
+import com.ziroom.minsu.spider.core.utils.ValueUtil;
 import com.ziroom.minsu.spider.domain.XiaoZhuHouseInfo;
+import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import com.ziroom.minsu.spider.service.XiaoZhuHouseService;
 import org.junit.Test;
@@ -29,6 +31,9 @@ public class MinsuWebSpiderApplicationTests {
 	@Autowired
 	private ProxyIpPipelineService proxyipPipeline;
 
+	@Autowired
+	private NetProxyIpPortMapper netProxyIpPortMapper;
+
 
 	@Test
 	public void testList(){
@@ -43,5 +48,20 @@ public class MinsuWebSpiderApplicationTests {
 //		}
 //		LOGGER.info("finished.");
 //	}
+
+
+
+	@Test
+	public void testSelectNetProxyIpByPage(){
+
+//		int count = netProxyIpPortMapper.countNetProxyIp();
+//
+//		List<NetProxyIpPort> netProxyIpPorts = netProxyIpPortMapper.selectNetProxyIpByPage(100,100);
+//		LOGGER.info("size:{}",netProxyIpPorts.size());
+
+		int page = ValueUtil.getPage(0,100);
+		LOGGER.info("page:{}",page);
+
+	}
 
 }
