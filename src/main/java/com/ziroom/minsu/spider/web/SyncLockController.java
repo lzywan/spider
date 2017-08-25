@@ -1,5 +1,6 @@
 package com.ziroom.minsu.spider.web;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ziroom.minsu.spider.config.mq.RabbitMqSender;
 import com.ziroom.minsu.spider.core.result.Result;
 import com.ziroom.minsu.spider.core.result.ResultCode;
@@ -62,6 +63,7 @@ public class SyncLockController {
      */
     @RequestMapping(name = "/syncSingleHouse",method = RequestMethod.POST)
     public Result syncSingleHouse(HouseRelateDto houseRelateDto){
+        LOGGER.info("【syncSingleHouse】入参={}", JSONObject.toJSONString(houseRelateDto));
         Result result = new Result();
         if (houseRelateDto == null){
             return result.setStatus(ResultCode.FAIL).setMessage("参数为空");
@@ -80,10 +82,8 @@ public class SyncLockController {
         if (Check.NuNCollection(ipList)){
             return result.setStatus(ResultCode.FAIL).setMessage("无可用ip");
         }
-
         //异步方法调用
         asyncService.saveHouseCalendarDateAndSendMq(houseRelateDto, ipList);
-
         LOGGER.info("返回结果");
         return result;
     }

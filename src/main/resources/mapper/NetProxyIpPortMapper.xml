@@ -44,6 +44,13 @@
     where is_del = 0
     AND is_valid = 1
   </select>
+
+  <update id="updateProxyIpUseCount" parameterType="map">
+    UPDATE t_net_proxy_ip_port
+    SET valid_used_count = valid_used_count+1
+    WHERE proxy_ip = #{ip,jdbcType=VARCHAR}
+    AND proxy_port = #{port,jdbcType=INTEGER}
+  </update>
   
   <insert id="saveNetProxyIp" parameterType="com.ziroom.minsu.spider.domain.NetProxyIpPort" >
     INSERT IGNORE INTO t_net_proxy_ip_port
