@@ -34,4 +34,13 @@ public interface ProxyIpPipelineService {
 	 * @return
 	 */
 	List<String> listProxyIp();
+
+	/**
+	 * 更新ip使用次数
+	 * @author jixd
+	 * @created 2017年08月25日 10:30:20
+	 * @param
+	 * @return
+	 */
+	int updateProxyIpUseCount(String ip,int port);
 }

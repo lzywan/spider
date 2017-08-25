@@ -13,10 +13,16 @@ package com.ziroom.minsu.spider.service;/*
  * @Since 1.0
  */
 
+import com.ziroom.minsu.spider.domain.dto.HouseRelateDto;
+
+import java.util.List;
 import java.util.concurrent.Future;
 
 public interface AsyncService {
 
     Future<Boolean> checkProxyIp(String url, String ip, int port);
+
+
+    void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, List<String> ipList);
 
 }

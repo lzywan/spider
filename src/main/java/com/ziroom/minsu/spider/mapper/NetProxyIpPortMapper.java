@@ -17,4 +17,6 @@ public interface NetProxyIpPortMapper {
 
     int updateByPrimaryKeySelective(NetProxyIpPort netProxyIpPort);
 
+    int updateProxyIpUseCount(@Param("ip") String ip,@Param("port") int port);
+
 }

@@ -1,5 +1,6 @@
 package com.ziroom.minsu.spider.service.impl;
 
+import com.ziroom.minsu.spider.config.db.ReadOnly;
 import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.core.utils.UUIDGenerator;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
@@ -167,6 +168,8 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 
 	}
 
+	//只读
+	@ReadOnly
 	@Override
 	public List<String> listProxyIp() {
 		List<NetProxyIpPort> netProxyIpPorts = netProxyIpPortMapper.listNetProxyIp();
@@ -178,6 +181,15 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 			list.add(netProxyIpPort.getProxyIp()+":"+netProxyIpPort.getProxyPort());
 		}
 		return list;
+	}
+
+
+	@Override
+	public int updateProxyIpUseCount(String ip,int port) {
+
+
+
+		return 0;
 	}
 
 }
