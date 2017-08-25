@@ -1,21 +1,13 @@
 package com.ziroom.minsu.spider.web;
 
 import com.alibaba.fastjson.JSONObject;
-import com.ziroom.minsu.spider.config.mq.RabbitMqSender;
 import com.ziroom.minsu.spider.core.result.Result;
 import com.ziroom.minsu.spider.core.result.ResultCode;
-import com.ziroom.minsu.spider.core.utils.CalendarDataUtil;
 import com.ziroom.minsu.spider.core.utils.Check;
-import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
 import com.ziroom.minsu.spider.domain.dto.HouseRelateDto;
-import com.ziroom.minsu.spider.domain.vo.CalendarDataVo;
-import com.ziroom.minsu.spider.domain.vo.CalendarTimeDataVo;
-import com.ziroom.minsu.spider.domain.vo.TimeDataVo;
-import com.ziroom.minsu.spider.service.AbHouseStatusService;
 import com.ziroom.minsu.spider.service.AsyncService;
 import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
