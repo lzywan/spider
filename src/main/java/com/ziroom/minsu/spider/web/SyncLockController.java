@@ -1,16 +1,21 @@
 package com.ziroom.minsu.spider.web;
 
 import com.ziroom.minsu.spider.config.mq.RabbitMqSender;
+import com.ziroom.minsu.spider.core.exception.ServiceException;
 import com.ziroom.minsu.spider.core.result.Result;
 import com.ziroom.minsu.spider.core.result.ResultCode;
 import com.ziroom.minsu.spider.core.utils.CalendarDataUtil;
+import com.ziroom.minsu.spider.core.utils.Check;
+import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
 import com.ziroom.minsu.spider.domain.dto.HouseRelateDto;
 import com.ziroom.minsu.spider.domain.vo.CalendarDataVo;
 import com.ziroom.minsu.spider.domain.vo.CalendarTimeDataVo;
 import com.ziroom.minsu.spider.domain.vo.TimeDataVo;
 import com.ziroom.minsu.spider.service.AbHouseStatusService;
+import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import com.ziroom.minsu.spider.service.ProxyIpService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +24,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>同步锁</p>
@@ -45,7 +54,7 @@ public class SyncLockController {
     private AbHouseStatusService abHouseStatusService;
 
     @Autowired
-    private ProxyIpService proxyIpService;
+    private ProxyIpPipelineService proxyIpPipelineService;
 
     @Autowired
     private RabbitMqSender rabbitMqSender;
@@ -73,22 +82,22 @@ public class SyncLockController {
             return result.setStatus(ResultCode.FAIL).setMessage("日历url为空");
         }
         //开始读取日历数据
+        List<String> ipList = proxyIpPipelineService.listProxyIp();
+        if (Check.NuNCollection(ipList)){
+            return result.setStatus(ResultCode.FAIL).setMessage("无可用ip");
+        }
 
-        String ip = "112.86.90.47";
-        int port = 8118;
-        saveHouseCalendarDateAndSendMq(houseRelateDto, ip, port);
+
+        saveHouseCalendarDateAndSendMq(houseRelateDto, ipList);
         LOGGER.info("返回结果");
         return result;
     }
 
 
 
-    @Async
-    public void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, String ip, int port) {
+    public void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto,List<String> ipList) {
         Result result = new Result();
-        //获取到日历原数据
-        List<CalendarDataVo> calendarDataVos = CalendarDataUtil.transStreamToListVo(CalendarDataUtil.getInputStreamByUrl(houseRelateDto.getCalendarUrl(), ip, port));
-
+        List<CalendarDataVo> calendarDataVos = httpGetData(houseRelateDto.getCalendarUrl(), ipList, 3);
         abHouseStatusService.saveUpdateAbHouse(calendarDataVos,houseRelateDto.getAbSn());
         //重新解析数据 放入mq中消费
         CalendarTimeDataVo calendarTimeDataVo = new CalendarTimeDataVo();
@@ -109,6 +118,33 @@ public class SyncLockController {
         rabbitMqSender.send(result);
     }
 
+
+    private List<CalendarDataVo> httpGetData(String url,List<String> ipList,int tryNum){
+        if (tryNum == 0){
+            return null;
+        }
+        String randomIp = CalendarDataUtil.getRandomIp(ipList);
+        String[] iparr = randomIp.split(":");
+        String ip = iparr[0];
+        int port = Integer.parseInt(iparr[1]);
+        String result = "";
+        try {
+            result = HttpClientUtil.sendProxyGet(url,new HashMap<>(),ip,port);
+        } catch (ConnectTimeoutException e) {
+            //连接超时，换一个ip
+            ipList.remove(randomIp);
+            LOGGER.info("重试ip次数num={}",tryNum);
+            return httpGetData(url,ipList,--tryNum);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (!Check.NuNStr(result)){
+            return CalendarDataUtil.transStreamToListVo(new ByteArrayInputStream(result.getBytes()));
+        }else{
+            return null;
+        }
+    }
 
 
 

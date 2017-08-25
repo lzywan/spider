@@ -28,6 +28,7 @@ import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.util.HostInfo;
 import net.fortuna.ical4j.util.Strings;
 import net.fortuna.ical4j.util.UidGenerator;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -301,26 +302,7 @@ public class CalendarDataUtil {
 
 		return in;
 	}
-	
-	/**
-	 * 
-	 * 获取网络流
-	 *
-	 * @author zl
-	 * @created 2017年4月12日 下午5:39:33
-	 *
-	 * @param urlStr
-	 * @return
-	 */
-	public static InputStream getInputStreamByUrl(String urlStr,String ip,int port) {
-		if (urlStr==null||urlStr.length()==0) {
-			return null;
-		}
-		Map<String,String> headerMap = new HashMap<>();
-		headerMap.put("User-Agent",getUserAgent());
-		String result = HttpClientUtil.sendProxyGet(urlStr, headerMap, ip, port);
-		return new ByteArrayInputStream(result.getBytes());
-	}
+
 	
 	/**
 	 * 
@@ -338,23 +320,20 @@ public class CalendarDataUtil {
 		}
 		return null; 
 	}
-	
+
 	/**
-	 * 
-	 * 更新ip列表
-	 *
-	 * @author zl
-	 * @created 2017年4月12日 下午5:50:40
-	 *
-	 * @param newIpSet
+	 * 随机获取ip
+	 * @author jixd
+	 * @created 2017年08月24日 13:36:42
+	 * @param
 	 * @return
 	 */
-	/*public static void updateIpsSet(Set<String> newIpSet){
-		if (newIpSet!=null && newIpSet.size()>0) {
-			ipSet = newIpSet;
+	public static String getRandomIp(List<String> list){
+		if (!Check.NuNCollection(list)){
+			return list.get(RandomUtils.nextInt(0,list.size()));
 		}
-		
-	} */
+		return null;
+	}
 	
 	/**
 	 * 
@@ -709,7 +688,7 @@ public class CalendarDataUtil {
 
         Map<String,String> headerMap = new HashMap<>();
         headerMap.put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1");
-		String s = HttpClientUtil.sendProxyGet("https://www.airbnbchina.cn/calendar/ical/17539939.ics?s=0ef6c764be261e8e22776eaddb63e226", headerMap, "116.62.11.138", 3128);
+		String s = HttpClientUtil.sendProxyGet("https://zh.airbnb.com/calendar/ical/17908318.ics?s=0e3f15c4f6e974281f4375b219ddc5d8", headerMap, "60.255.186.169", 8888);
 		System.err.println(s);
 		List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(new ByteArrayInputStream(s.getBytes()))));
 		System.out.println(JSONObject.toJSONString(list));

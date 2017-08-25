@@ -1,5 +1,6 @@
 package com.ziroom.minsu.spider.service.impl;
 
+import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.core.utils.UUIDGenerator;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
@@ -17,9 +18,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import us.codecraft.webmagic.ResultItems;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 
 /**
@@ -160,6 +165,19 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 			LOGGER.info("【checkProxyIpAvailable】,检验代理ip可用性定时任务异常,e:{}",e);
 		}
 
+	}
+
+	@Override
+	public List<String> listProxyIp() {
+		List<NetProxyIpPort> netProxyIpPorts = netProxyIpPortMapper.listNetProxyIp();
+		if (Check.NuNCollection(netProxyIpPorts)){
+			return null;
+		}
+		List<String> list = new ArrayList<>();
+		for (NetProxyIpPort netProxyIpPort : netProxyIpPorts){
+			list.add(netProxyIpPort.getProxyIp()+":"+netProxyIpPort.getProxyPort());
+		}
+		return list;
 	}
 
 }

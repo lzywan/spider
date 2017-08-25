@@ -2,6 +2,9 @@ package com.ziroom.minsu.spider.service;
 
 import us.codecraft.webmagic.ResultItems;
 
+import java.util.List;
+import java.util.Set;
+
 
 /**
  *
@@ -22,4 +25,13 @@ public interface ProxyIpPipelineService {
 	void asyncCheckProxyAndSave(ResultItems resultItems);
 
 	void checkProxyIpAvailable();
+
+	/**
+	 * 获取可用ip列表
+	 * @author jixd
+	 * @created 2017年08月24日 11:29:32
+	 * @param
+	 * @return
+	 */
+	List<String> listProxyIp();
 }

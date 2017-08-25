@@ -120,7 +120,7 @@ public class Check {
     /**
      * 判断集合是否为空
      *
-     * @param nodes
+     * @param colls
      * 待检测的集合
      * @return true: 空; false:非空.
      */

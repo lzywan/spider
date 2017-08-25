@@ -10,29 +10,17 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +42,6 @@ public class HttpClientUtil {
 
     private static Logger LOGGER = LoggerFactory.getLogger(HttpClientUtil.class);
 
-
     /**
      * 有代理的请求
      * @author jixd
@@ -62,10 +49,13 @@ public class HttpClientUtil {
      * @param
      * @return
      */
-    public static String sendProxyGet(String url,Map<String,String> headerMap,String ip,int port){
-        try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
+    public static String sendProxyGet(String url,Map<String,String> headerMap,String ip,int port) throws IOException{
+            RequestConfig defaultConfig = getRequestConfig(null, 0);
+            //设置默认配置
+            CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(defaultConfig).build();
             HttpGet httpGet = new HttpGet(url);
+            //直接在这个位置设置userAgent
+            headerMap.put("User-Agent",CalendarDataUtil.getUserAgent());
             initHeader(httpGet,headerMap);
             httpGet.setConfig(getRequestConfig(ip,port));
             CloseableHttpResponse response = null;
@@ -73,9 +63,7 @@ public class HttpClientUtil {
                 response = httpclient.execute(httpGet);
                 HttpEntity entity = response.getEntity();
                 return EntityUtils.toString(entity, "UTF-8");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
+            }finally {
                 if (response != null) {
                     try {
                         response.close();
@@ -84,11 +72,6 @@ public class HttpClientUtil {
                     }
                 }
             }
-            return null;
-        }catch (Exception e){
-            LOGGER.error("sendProxyGet error={}",e);
-        }
-        return null;
     }
 
     /**
@@ -229,46 +212,18 @@ public class HttpClientUtil {
         return flag;
     }
 
-    public static void main(String[] args) throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public static void main(String[] args) {
 
-
-        SSLContext context = SSLContexts.custom()
-                .loadTrustMaterial(TrustSelfSignedStrategy.INSTANCE)
-                .build();
-
-
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.INSTANCE)
-                .register("https", new SSLConnectionSocketFactory(context, NoopHostnameVerifier.INSTANCE))
-                .build();
-
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
-
-        HttpHost proxy = new HttpHost("60.255.186.169", 8888);
-        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-
-
-       /* CloseableHttpClient httpclient = HttpClients.custom()
-                .setConnectionManager(connectionManager)
-                .setRoutePlanner(routePlanner)
-                //.setProxy(new HttpHost("60.255.186.169", 8888))
-                .build();*/
-        CloseableHttpClient httpclient = HttpClients.custom().build();
-        HttpGet httpget = new HttpGet("http://www.ziroom.com/");
-        // Request configuration can be overridden at the request level.
-        // They will take precedence over the one set at the client level.
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(5000)
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
-                .setProxy(new HttpHost("112.86.90.47",8118))
-                .build();
-        httpget.setConfig(requestConfig);
-        httpget.addHeader("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.9 Safari/536.5");
-        CloseableHttpResponse response = httpclient.execute(httpget);
-        HttpEntity entity = response.getEntity();
-        System.out.println(EntityUtils.toString(entity, "UTF-8"));
-
+        Map<String,String> paramMap = new HashMap<>();
+        paramMap.put("User-Agent","Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3");
+        String s = null;
+        try {
+            s = sendProxyGet("https://zh.airbnb.com/calendar/ical/19534577.ics?s=bc0b6fc6173428bc097d42526fc75988", paramMap, "121.31.150.25", 8123);
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.info("io");
+        }
+        System.err.println(s);
 
 
     }
