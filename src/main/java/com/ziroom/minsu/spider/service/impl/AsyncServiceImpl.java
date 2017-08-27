@@ -85,6 +85,10 @@ public class AsyncServiceImpl implements AsyncService{
         Result result = new Result();
         //异步获取数据 重试3次
         List<CalendarDataVo> calendarDataVos = httpGetData(houseRelateDto.getCalendarUrl(), ipList, 3);
+        if (Check.NuNCollection(calendarDataVos)){
+            LOGGER.info("请求日历没有结果或异常");
+            return;
+        }
         LOGGER.info("返回结果={}", JSONObject.toJSONString(calendarDataVos));
         abHouseStatusService.saveUpdateAbHouse(calendarDataVos,houseRelateDto.getAbSn());
         //重新解析数据 放入mq中消费
@@ -101,7 +105,6 @@ public class AsyncServiceImpl implements AsyncService{
         }
         calendarTimeDataVo.setDateList(timeList);
         result.setData(calendarTimeDataVo);
-        LOGGER.info("异步任务执行完成");
         //mq发送
         rabbitMqSender.send(result);
     }
@@ -129,17 +132,14 @@ public class AsyncServiceImpl implements AsyncService{
             if (result.indexOf("html") >0){
                 //代理ip不可用，换一个ip
                 ipList.remove(randomIp);
-                LOGGER.info("重试ip次数num={}",tryNum);
                 return httpGetData(url,ipList,--tryNum);
             }
         } catch (ConnectTimeoutException e) {
             //连接超时，换一个ip
             ipList.remove(randomIp);
-            LOGGER.info("重试ip次数num={}",tryNum);
             return httpGetData(url,ipList,--tryNum);
         } catch (IOException e) {
             ipList.remove(randomIp);
-            LOGGER.info("重试ip次数num={}",tryNum);
             return httpGetData(url,ipList,--tryNum);
         }
         if (!Check.NuNStr(result)){

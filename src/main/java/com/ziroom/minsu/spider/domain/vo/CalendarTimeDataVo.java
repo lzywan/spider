@@ -31,10 +31,6 @@ public class CalendarTimeDataVo {
      * 出租方式
      */
     private Integer rentWay;
-    /**
-     * 出租日历url
-     */
-    private String calendarUrl;
 
     private List<TimeDataVo> DateList;
 
@@ -60,14 +56,6 @@ public class CalendarTimeDataVo {
 
     public void setRentWay(Integer rentWay) {
         this.rentWay = rentWay;
-    }
-
-    public String getCalendarUrl() {
-        return calendarUrl;
-    }
-
-    public void setCalendarUrl(String calendarUrl) {
-        this.calendarUrl = calendarUrl;
     }
 
     public List<TimeDataVo> getDateList() {
