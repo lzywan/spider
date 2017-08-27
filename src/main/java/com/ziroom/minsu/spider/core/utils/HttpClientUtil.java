@@ -3,6 +3,7 @@ package com.ziroom.minsu.spider.core.utils;
 import com.ziroom.minsu.spider.domain.constant.HttpConstant;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -194,7 +195,7 @@ public class HttpClientUtil {
         try {
             response = httpclient.execute(httpGet);
             int status = response.getStatusLine().getStatusCode();
-            if(status>=200&&status<=300){
+            if(status>= HttpStatus.SC_OK&&status<=HttpStatus.SC_MULTIPLE_CHOICES){
                 flag = true;
             }
         } catch (IOException e) {
