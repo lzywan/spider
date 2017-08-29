@@ -32,7 +32,7 @@ public class CalendarTimeDataVo {
      */
     private Integer rentWay;
 
-    private List<TimeDataVo> DateList;
+    private List<TimeDataVo> calendarDataVos;
 
     public String getHouseFid() {
         return houseFid;
@@ -58,11 +58,11 @@ public class CalendarTimeDataVo {
         this.rentWay = rentWay;
     }
 
-    public List<TimeDataVo> getDateList() {
-        return DateList;
+    public List<TimeDataVo> getCalendarDataVos() {
+        return calendarDataVos;
     }
 
-    public void setDateList(List<TimeDataVo> dateList) {
-        DateList = dateList;
+    public void setCalendarDataVos(List<TimeDataVo> calendarDataVos) {
+        this.calendarDataVos = calendarDataVos;
     }
 }

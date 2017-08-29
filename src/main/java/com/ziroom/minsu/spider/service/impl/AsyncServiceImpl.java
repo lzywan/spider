@@ -13,7 +13,6 @@ import com.ziroom.minsu.spider.domain.vo.TimeDataVo;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import com.ziroom.minsu.spider.service.AbHouseStatusService;
 import com.ziroom.minsu.spider.service.AsyncService;
-import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -103,7 +101,7 @@ public class AsyncServiceImpl implements AsyncService{
             timeDataVo.setEndDate(dataVo.getEndDate());
             timeList.add(timeDataVo);
         }
-        calendarTimeDataVo.setDateList(timeList);
+        calendarTimeDataVo.setCalendarDataVos(timeList);
         result.setData(calendarTimeDataVo);
         //mq发送
         rabbitMqSender.send(result);
