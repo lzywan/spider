@@ -13,6 +13,10 @@
 
     <packaging>jar</packaging>
 
+    <properties>
+        <project.env>${project.env}</project.env>
+    </properties>
+
     <build>
         <resources>
             <resource>
@@ -26,9 +30,14 @@
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
+                <filtering>true</filtering>
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>

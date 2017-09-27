@@ -22,7 +22,6 @@
             <outputDirectory>minsu-web-spider/lib</outputDirectory>
             <excludes>
                 <exclude>com.ziroom.minsu:minsu-web-spider-assembly</exclude>
-                <exclude>com.ziroom.minsu:minsu-web-spider-core</exclude>
             </excludes>
         </dependencySet>
         <dependencySet>
