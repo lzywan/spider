@@ -345,34 +345,38 @@ public class CalendarDataUtil {
 	 * @param originalInputStream
 	 * @return
 	 */
-	private static InputStream normalizeInputStream(InputStream originalInputStream){
-		if (originalInputStream==null) {
+	private static InputStream normalizeInputStream(InputStream originalInputStream) {
+		if (originalInputStream == null) {
 			return null;
 		}
-		InputStream newInputStream = originalInputStream;
-		
+		InputStream newInputStream;
+
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(originalInputStream));
 			StringBuilder resultStringBuilder = new StringBuilder();
-			String line=null;  
-	        while ((line = br.readLine()) != null) {
-	        	line = line.trim();
-	        	int t= line.indexOf(propertysperator);
-	        	if(t<=0 ||(t>0 &&(!line.startsWith(Calendar.BEGIN) && !line.startsWith(Calendar.END) 
-        				&& !line.startsWith(Calendar.VCALENDAR) && !isProperty(line)
-        				&& resultStringBuilder.toString().endsWith(linesperator)))){
-	        		resultStringBuilder.delete(resultStringBuilder.lastIndexOf(linesperator), resultStringBuilder.length());
-	        	} 
-	        	resultStringBuilder.append(line); 
-	        	resultStringBuilder.append(linesperator);
-	        }
-	        newInputStream = new ByteArrayInputStream(resultStringBuilder.toString().getBytes());  
-		
+			String line;
+			while ((line = br.readLine()) != null) {
+				line = line.trim();
+				int t = line.indexOf(propertysperator);
+				if ((t <= 0 && resultStringBuilder.toString().endsWith(linesperator)) ||
+                        (t > 0 && !line.startsWith(Calendar.BEGIN)
+                                && !line.startsWith(Calendar.END)
+                                && !line.startsWith(Calendar.VCALENDAR)
+                                && !isProperty(line)
+                                && resultStringBuilder.toString().endsWith(linesperator))) {
+
+                    resultStringBuilder.delete(resultStringBuilder.lastIndexOf(linesperator), resultStringBuilder.length());
+				}
+				resultStringBuilder.append(line);
+				resultStringBuilder.append(linesperator);
+			}
+			newInputStream = new ByteArrayInputStream(resultStringBuilder.toString().getBytes());
+
 		} catch (Exception e) {
 			LOGGER.error("流数据规范化失败或者超时，e={}", e);
-			return  null;
+			return null;
 		}
-		
+
 		return newInputStream;
 	}
 	
