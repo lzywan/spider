@@ -9,8 +9,8 @@
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
-        <module>minsu-web-spider-core</module>
         <module>minsu-web-spider-assembly</module>
+        <module>minsu-web-spider-core</module>
     </modules>
 
     <parent>
