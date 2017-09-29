@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ziroom.minsu.spider.mapper.AbHouseStatusMapper">
+    <resultMap id="BaseResultMap" type="com.ziroom.minsu.spider.domain.AbHouseStatus">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="fid" property="fid" jdbcType="VARCHAR"/>
+        <result column="ab_sn" property="abSn" jdbcType="VARCHAR"/>
+        <result column="summary_status" property="summaryStatus" jdbcType="INTEGER"/>
+        <result column="summary" property="summary" jdbcType="VARCHAR"/>
+        <result column="uid" property="uid" jdbcType="VARCHAR"/>
+        <result column="lock_time" property="lockTime" jdbcType="TIMESTAMP"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="last_modify_date" property="lastModifyDate" jdbcType="TIMESTAMP"/>
+        <result column="is_del" property="isDel" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, fid, ab_sn, summary_status, summary, uid, lock_time, phone, email, create_time, 
+    last_modify_date, is_del
+  </sql>
+
+    <delete id="deleteByLockTime" parameterType="string">
+        delete from t_ab_house_status
+        where ab_sn = #{abSn,jdbcType=VARCHAR}
+        AND lock_time <![CDATA[ >= ]]> CURDATE();
+    </delete>
+
+    <insert id="insert" parameterType="com.ziroom.minsu.spider.domain.AbHouseStatus">
+        insert into t_ab_house_status
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="fid != null">
+                fid,
+            </if>
+            <if test="abSn != null">
+                ab_sn,
+            </if>
+            <if test="summaryStatus != null">
+                summary_status,
+            </if>
+            <if test="summary != null">
+                summary,
+            </if>
+            <if test="uid != null">
+                uid,
+            </if>
+            <if test="lockTime != null">
+                lock_time,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="email != null">
+                email,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="lastModifyDate != null">
+                last_modify_date,
+            </if>
+            <if test="isDel != null">
+                is_del,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="fid != null">
+                #{fid,jdbcType=VARCHAR},
+            </if>
+            <if test="abSn != null">
+                #{abSn,jdbcType=VARCHAR},
+            </if>
+            <if test="summaryStatus != null">
+                #{summaryStatus,jdbcType=INTEGER},
+            </if>
+            <if test="summary != null">
+                #{summary,jdbcType=VARCHAR},
+            </if>
+            <if test="uid != null">
+                #{uid,jdbcType=VARCHAR},
+            </if>
+            <if test="lockTime != null">
+                #{lockTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="phone != null">
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null">
+                #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastModifyDate != null">
+                #{lastModifyDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isDel != null">
+                #{isDel,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+
+</mapper>
