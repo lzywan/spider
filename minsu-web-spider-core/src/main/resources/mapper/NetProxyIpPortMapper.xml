@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper" >
+  <resultMap id="BaseResultMap" type="com.ziroom.minsu.spider.domain.NetProxyIpPort" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="fid" property="fid" jdbcType="VARCHAR" />
+    <result column="proxy_ip" property="proxyIp" jdbcType="VARCHAR" />
+    <result column="proxy_port" property="proxyPort" jdbcType="INTEGER" />
+    <result column="is_valid" property="isValid" jdbcType="INTEGER" />
+    <result column="valid_used_count" property="validUsedCount" jdbcType="INTEGER" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="last_modify_date" property="lastModifyDate" jdbcType="TIMESTAMP" />
+    <result column="is_del" property="isDel" jdbcType="INTEGER" />
+    <result column="ip_source" property="ipSource" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, fid, proxy_ip, proxy_port, is_valid, valid_used_count, create_date, last_modify_date, 
+    is_del, ip_source
+  </sql>
+  
+  <!-- 获取有效代理ip地址列表 -->
+  <select id="listNetProxyIp" parameterType="map" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_net_proxy_ip_port
+    where is_del = 0
+    AND is_valid = 1
+    ORDER BY id DESC
+    LIMIT 100
+  </select>
+
+  <select id="countNetProxyIp" resultType="int" >
+    select
+    count(*)
+    from t_net_proxy_ip_port
+    where is_del = 0
+    AND is_valid = 1
+  </select>
+
+  <select id="selectNetProxyIpByPage" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from t_net_proxy_ip_port
+    where is_del = 0
+    AND is_valid = 1
+  </select>
+
+  <update id="updateProxyIpUseCount" parameterType="map">
+    UPDATE t_net_proxy_ip_port
+    SET valid_used_count = valid_used_count+1
+    WHERE proxy_ip = #{ip,jdbcType=VARCHAR}
+    AND proxy_port = #{port,jdbcType=INTEGER}
+  </update>
+  
+  <insert id="saveNetProxyIp" parameterType="com.ziroom.minsu.spider.domain.NetProxyIpPort" >
+    INSERT IGNORE INTO t_net_proxy_ip_port
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="fid != null" >
+        fid,
+      </if>
+      <if test="proxyIp != null" >
+        proxy_ip,
+      </if>
+      <if test="proxyPort != null" >
+        proxy_port,
+      </if>
+      <if test="isValid != null" >
+        is_valid,
+      </if>
+      <if test="validUsedCount != null" >
+        valid_used_count,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+      <if test="lastModifyDate != null" >
+        last_modify_date,
+      </if>
+      <if test="isDel != null" >
+        is_del,
+      </if>
+      <if test="ipSource != null" >
+        ip_source,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="fid != null" >
+        #{fid,jdbcType=VARCHAR},
+      </if>
+      <if test="proxyIp != null" >
+        #{proxyIp,jdbcType=VARCHAR},
+      </if>
+      <if test="proxyPort != null" >
+        #{proxyPort,jdbcType=INTEGER},
+      </if>
+      <if test="isValid != null" >
+        #{isValid,jdbcType=INTEGER},
+      </if>
+      <if test="validUsedCount != null" >
+        #{validUsedCount,jdbcType=INTEGER},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastModifyDate != null" >
+        #{lastModifyDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isDel != null" >
+        #{isDel,jdbcType=INTEGER},
+      </if>
+      <if test="ipSource != null" >
+        #{ipSource,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.ziroom.minsu.spider.domain.NetProxyIpPort" >
+    update t_net_proxy_ip_port
+    <set >
+      <if test="fid != null" >
+        fid = #{fid,jdbcType=VARCHAR},
+      </if>
+      <if test="proxyIp != null" >
+        proxy_ip = #{proxyIp,jdbcType=VARCHAR},
+      </if>
+      <if test="proxyPort != null" >
+        proxy_port = #{proxyPort,jdbcType=INTEGER},
+      </if>
+      <if test="isValid != null" >
+        is_valid = #{isValid,jdbcType=INTEGER},
+      </if>
+      <if test="validUsedCount != null" >
+        valid_used_count = #{validUsedCount,jdbcType=INTEGER},
+      </if>
+      <if test="isDel != null" >
+        is_del = #{isDel,jdbcType=INTEGER},
+      </if>
+      <if test="ipSource != null" >
+        ip_source = #{ipSource,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+</mapper>
