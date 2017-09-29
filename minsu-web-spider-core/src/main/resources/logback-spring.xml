@@ -3,7 +3,7 @@
 <configuration debug="false" scan="true" scanPeriod="60 seconds">
 
     <contextName>com.ziroom.minsu</contextName>
-    <property name="log.base" value="E:\\logs" />
+    <property name="log.base" value="../logs" />
 
     <!--输出到控制台-->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
