@@ -1,6 +1,6 @@
 package com.ziroom.minsu.spider.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
+import com.ziroom.minsu.spider.config.mq.RabbitMqConfiguration;
 import com.ziroom.minsu.spider.config.mq.RabbitMqSender;
 import com.ziroom.minsu.spider.core.result.Result;
 import com.ziroom.minsu.spider.core.utils.CalendarDataUtil;
@@ -13,7 +13,6 @@ import com.ziroom.minsu.spider.domain.vo.TimeDataVo;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import com.ziroom.minsu.spider.service.AbHouseStatusService;
 import com.ziroom.minsu.spider.service.AsyncService;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +67,7 @@ public class AsyncServiceImpl implements AsyncService{
     @Override
     public Future<Boolean> checkProxyIp(String url, String ip, int port){
         Boolean result = HttpClientUtil.checkProxyIp(url,ip,port);
-        return new AsyncResult<Boolean>(result);
+        return new AsyncResult<>(result);
     }
 
     /**
@@ -87,9 +86,11 @@ public class AsyncServiceImpl implements AsyncService{
             LOGGER.info("请求日历没有结果或异常");
             return;
         }
-        LOGGER.info("返回结果={}", JSONObject.toJSONString(calendarDataVos));
-        abHouseStatusService.saveUpdateAbHouse(calendarDataVos,houseRelateDto.getAbSn());
-        //重新解析数据 放入mq中消费
+        // 保存ab原始数据
+        int count = abHouseStatusService.saveUpdateAbHouse(calendarDataVos, houseRelateDto.getAbSn());
+        LOGGER.info("保存ab原始数据数量={},houseRelateDto={}", count, houseRelateDto);
+
+        // 整理数据 mq通知order加同步锁
         CalendarTimeDataVo calendarTimeDataVo = new CalendarTimeDataVo();
         calendarTimeDataVo.setHouseFid(houseRelateDto.getHouseFid());
         calendarTimeDataVo.setRoomFid(houseRelateDto.getRoomFid());
@@ -103,8 +104,26 @@ public class AsyncServiceImpl implements AsyncService{
         }
         calendarTimeDataVo.setCalendarDataVos(timeList);
         result.setData(calendarTimeDataVo);
-        //mq发送
-        rabbitMqSender.send(result);
+        rabbitMqSender.send(RabbitMqConfiguration.lockMqName, result);
+        LOGGER.info("发送日历mq数据={}", result);
+    }
+    
+    /**
+     * 
+     * 检测日历url是否有效
+     * 
+     * @author zhangyl2
+     * @created 2017年10月20日 18:59
+     * @param 
+     * @return 
+     */
+    @Override
+    public boolean checkCalendarUrlAvailable(String calendarUrl, List<String> ipList){
+        List<CalendarDataVo> calendarDataVos = httpGetData(calendarUrl, ipList, 3);
+        if(!Check.NuNCollection(calendarDataVos)){
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -114,36 +133,37 @@ public class AsyncServiceImpl implements AsyncService{
      * @param tryNum
      * @return
      */
-    private List<CalendarDataVo> httpGetData(String url,List<String> ipList,int tryNum){
-        if (tryNum == 0){
-            return null;
-        }
-        String randomIp = CalendarDataUtil.getRandomIp(ipList);
-        String[] iparr = randomIp.split(":");
-        String ip = iparr[0];
-        int port = Integer.parseInt(iparr[1]);
-        //更新操作
-        netProxyIpPortMapper.updateProxyIpUseCount(ip,port);
-        String result = "";
-        try {
-            result = HttpClientUtil.sendProxyGet(url,new HashMap<>(),ip,port);
-            if (result.indexOf("html") >0){
-                //代理ip不可用，换一个ip
+    private List<CalendarDataVo> httpGetData(String url, List<String> ipList, int tryNum) {
+        String result = null;
+        for (int i = 0; i < tryNum; i++) {
+            String randomIp = CalendarDataUtil.getRandomIp(ipList);
+            String[] iparr = randomIp.split(":");
+            String ip = iparr[0];
+            int port = Integer.parseInt(iparr[1]);
+            //更新操作
+            netProxyIpPortMapper.updateProxyIpUseCount(ip, port);
+
+            try {
+                result = HttpClientUtil.sendProxyGet(url, new HashMap<>(), ip, port);
+                if (result.indexOf("html") > 0) {
+                    //代理ip不可用，换一个ip
+                    ipList.remove(randomIp);
+                }
+            } catch (IOException e) {
+                //连接超时等原因，换一个ip
                 ipList.remove(randomIp);
-                return httpGetData(url,ipList,--tryNum);
             }
-        } catch (ConnectTimeoutException e) {
-            //连接超时，换一个ip
-            ipList.remove(randomIp);
-            return httpGetData(url,ipList,--tryNum);
-        } catch (IOException e) {
-            ipList.remove(randomIp);
-            return httpGetData(url,ipList,--tryNum);
         }
-        if (!Check.NuNStr(result)){
-            return CalendarDataUtil.transStreamToListVo(new ByteArrayInputStream(result.getBytes()));
-        }else{
+        List<CalendarDataVo> calendarDataVoList = null;
+        try {
+            if (!Check.NuNStr(result)) {
+                calendarDataVoList = CalendarDataUtil.transStreamToListVo(new ByteArrayInputStream(result.getBytes()));
+            }
+        } catch (Exception e) {
+            LOGGER.info("获取日历失败：" + e.getMessage() + "e={}", e);
             return null;
         }
+
+        return calendarDataVoList;
     }
 }

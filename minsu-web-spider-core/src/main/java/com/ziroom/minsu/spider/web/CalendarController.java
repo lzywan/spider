@@ -32,10 +32,11 @@ import java.util.List;
  * @Date Created in 2017年08月22日 15:27
  * @since 1.0
  */
-@RestController("/syncLock")
-public class SyncLockController {
+@RestController
+@RequestMapping("/calendar")
+public class CalendarController {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SyncLockController.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(CalendarController.class);
 
     @Autowired
     private ProxyIpPipelineService proxyIpPipelineService;
@@ -50,7 +51,7 @@ public class SyncLockController {
      * @param
      * @return
      */
-    @RequestMapping(name = "/syncSingleHouse",method = RequestMethod.POST)
+    @RequestMapping(value = "/syncSingleHouse", method = RequestMethod.POST)
     @ResponseBody
     public Result syncSingleHouse(HouseRelateDto houseRelateDto){
         LOGGER.info("【syncSingleHouse】入参={}", JSONObject.toJSONString(houseRelateDto));
@@ -67,6 +68,10 @@ public class SyncLockController {
         if (StringUtils.isEmpty(houseRelateDto.getCalendarUrl())){
             return result.setStatus(ResultCode.FAIL).setMessage("日历url为空");
         }
+        if (StringUtils.isEmpty(houseRelateDto.getAbSn())){
+            return result.setStatus(ResultCode.FAIL).setMessage("abSn为空");
+        }
+
         //开始读取日历数据
         List<String> ipList = proxyIpPipelineService.listProxyIp();
         if (Check.NuNCollection(ipList)){
@@ -74,14 +79,30 @@ public class SyncLockController {
         }
         //异步方法调用
         asyncService.saveHouseCalendarDateAndSendMq(houseRelateDto, ipList);
-        LOGGER.info("返回结果");
         return result;
     }
 
+    /**
+     * 
+     * 检查日历url是否有效
+     * 
+     * @author zhangyl2
+     * @created 2017年10月20日 19:05
+     * @param 
+     * @return 
+     */
+    @RequestMapping(value = "/checkCalendarUrlAvailable", method = RequestMethod.POST)
+    @ResponseBody
+    public Result checkCalendarUrlAvailable(String calendarUrl){
+        Result result = new Result();
+        List<String> ipList = proxyIpPipelineService.listProxyIp();
+        if (Check.NuNCollection(ipList)){
+            return result.setStatus(ResultCode.FAIL).setMessage("无可用ip");
+        }
 
+        result.setData(asyncService.checkCalendarUrlAvailable(calendarUrl, ipList));
 
-
-
-
+        return result;
+    }
 
 }

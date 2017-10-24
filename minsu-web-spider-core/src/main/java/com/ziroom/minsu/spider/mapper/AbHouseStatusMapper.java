@@ -9,6 +9,17 @@ import com.ziroom.minsu.spider.domain.AbHouseStatus;
  * @return
  */
 public interface AbHouseStatusMapper {
+
+    /**
+     * 
+     * 查询ab事件数量
+     * 
+     * @author zhangyl2
+     * @created 2017年10月20日 14:20
+     * @param 
+     * @return 
+     */
+    int selectCountByAbSn(String abSn);
     /**
      * 保存记录
      * @author jixd

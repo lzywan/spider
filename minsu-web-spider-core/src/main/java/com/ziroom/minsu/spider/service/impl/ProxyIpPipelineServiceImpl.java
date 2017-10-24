@@ -20,12 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import us.codecraft.webmagic.ResultItems;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 
 /**
@@ -111,9 +108,7 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 	 * @params:
 	 * @return:
 	 */
-//	@Scheduled(cron="0 0 2 * * ?")
-//	@Scheduled(cron="0 */1 * * * ?")
-	@Scheduled(cron="0 15 21 * * ?")
+    @Scheduled(cron = "33 33 0/6 * * ? ")
 	@Transactional
 	@Async
 	@Override
