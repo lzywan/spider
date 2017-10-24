@@ -30,23 +30,36 @@ import java.util.Map;
  * @since 1.0
  */
 @Service
-public class AbHouseStatusServiceImpl implements AbHouseStatusService{
+public class AbHouseStatusServiceImpl implements AbHouseStatusService {
 
     @Autowired
     private AbHouseStatusMapper abHouseStatusMapper;
 
     @Override
-    public int saveUpdateAbHouse(List<CalendarDataVo> list,String abSn) {
+    public int saveUpdateAbHouse(List<CalendarDataVo> list, String abSn) {
+
+        // 判断是否第一次入库
+        boolean firstSaveAbHouse = false;
+        int abHouseCount = abHouseStatusMapper.selectCountByAbSn(abSn);
+        if (abHouseCount == 0) {
+            firstSaveAbHouse = true;
+        } else if(abHouseCount > 0) {
+            firstSaveAbHouse = false;
+        }
+
+        // 删除当前之后的数据
         abHouseStatusMapper.deleteByLockTime(abSn);
         Date now = DateUtil.localDateTodate(LocalDate.now());
         int count = 0;
         //处理房源锁状态
-        for (CalendarDataVo calendarDataVo : list){
+        for (CalendarDataVo calendarDataVo : list) {
             Date startDate = calendarDataVo.getStartDate();
             Date endDate = calendarDataVo.getEndDate();
             List<Date> dates = DateUtil.dateSplit(startDate, endDate);
-            for (Date date : dates){
-                if (date.before(now)){
+            for (Date date : dates) {
+
+                // 不是首次入库，则跳过以前的数据
+                if (!firstSaveAbHouse && date.before(now)) {
                     continue;
                 }
                 AbHouseStatus abStatusEntity = new AbHouseStatus();
@@ -55,13 +68,13 @@ public class AbHouseStatusServiceImpl implements AbHouseStatusService{
                 abStatusEntity.setSummary(calendarDataVo.getSummary());
                 abStatusEntity.setSummaryStatus(calendarDataVo.getSummaryStatus());
                 abStatusEntity.setAbSn(abSn);
-                if (calendarDataVo.getSummaryStatus() == SyncHouseLockEnum.ORDER_LOCK.getCode()){
+                if (calendarDataVo.getSummaryStatus() == SyncHouseLockEnum.ORDER_LOCK.getCode()) {
                     Map<String, Object> descriptionMap = calendarDataVo.getDescriptionMap();
                     abStatusEntity.setEmail((String) descriptionMap.get("EMAIL"));
                     abStatusEntity.setPhone((String) descriptionMap.get("PHONE"));
                 }
                 abStatusEntity.setLockTime(date);
-                abHouseStatusMapper.insert(abStatusEntity);
+                count += abHouseStatusMapper.insert(abStatusEntity);
             }
         }
         return count;

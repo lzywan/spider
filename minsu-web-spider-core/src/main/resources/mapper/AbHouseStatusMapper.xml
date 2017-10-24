@@ -17,9 +17,15 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-    id, fid, ab_sn, summary_status, summary, uid, lock_time, phone, email, create_time, 
-    last_modify_date, is_del
-  </sql>
+        id, fid, ab_sn, summary_status, summary, uid, lock_time, phone, email, create_time,
+        last_modify_date, is_del
+    </sql>
+
+    <select id="selectCountByAbSn" parameterType="string" resultType="int">
+        select count(id)
+        from t_ab_house_status
+        where ab_sn = #{abSn,jdbcType=VARCHAR}
+    </select>
 
     <delete id="deleteByLockTime" parameterType="string">
         delete from t_ab_house_status

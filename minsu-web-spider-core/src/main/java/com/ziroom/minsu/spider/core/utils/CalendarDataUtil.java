@@ -110,7 +110,7 @@ public class CalendarDataUtil {
 	 * @param in
 	 * @return
 	 */
-	public static Calendar getCalendarData(InputStream in) {
+	public static Calendar getCalendarData(InputStream in) throws Exception {
 		if (in == null) {
 			return null;
 		}
@@ -119,9 +119,8 @@ public class CalendarDataUtil {
 			InputStreamReader reader = new InputStreamReader(in);			
 			return builder.build(reader);
 		} catch (Exception e) {
-			LOGGER.info("转化日历对象失败，e={}", e);
+		    throw new Exception("转化日历对象失败");
 		}
-		return null;
 	}
 	
 	/**
@@ -277,9 +276,9 @@ public class CalendarDataUtil {
 		}
 		return tl.get();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * 获取文件流
 	 *
 	 * @author zl
@@ -345,42 +344,36 @@ public class CalendarDataUtil {
 	 * @param originalInputStream
 	 * @return
 	 */
-	private static InputStream normalizeInputStream(InputStream originalInputStream) {
-		if (originalInputStream == null) {
-			return null;
-		}
-		InputStream newInputStream;
+    private static InputStream normalizeInputStream(InputStream originalInputStream) throws Exception {
+        if (originalInputStream == null) {
+            return null;
+        }
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(originalInputStream));
+            StringBuilder resultStringBuilder = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                int t = line.indexOf(propertysperator);
+                if (t <= 0 || (t > 0
+                        && !line.startsWith(Calendar.BEGIN)
+                        && !line.startsWith(Calendar.END)
+                        && !line.startsWith(Calendar.VCALENDAR)
+                        && !isProperty(line))) {
+                    if (resultStringBuilder.toString().endsWith(linesperator)) {
+                        resultStringBuilder.delete(resultStringBuilder.lastIndexOf(linesperator), resultStringBuilder.length());
+                    }
+                }
+                resultStringBuilder.append(line);
+                resultStringBuilder.append(linesperator);
+            }
+            return new ByteArrayInputStream(resultStringBuilder.toString().getBytes());
+        } catch (Exception e) {
+            throw new Exception("流数据规范化失败或者超时");
+        }
+    }
 
-		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(originalInputStream));
-			StringBuilder resultStringBuilder = new StringBuilder();
-			String line;
-			while ((line = br.readLine()) != null) {
-				line = line.trim();
-				int t = line.indexOf(propertysperator);
-				if ((t <= 0 && resultStringBuilder.toString().endsWith(linesperator)) ||
-                        (t > 0 && !line.startsWith(Calendar.BEGIN)
-                                && !line.startsWith(Calendar.END)
-                                && !line.startsWith(Calendar.VCALENDAR)
-                                && !isProperty(line)
-                                && resultStringBuilder.toString().endsWith(linesperator))) {
-
-                    resultStringBuilder.delete(resultStringBuilder.lastIndexOf(linesperator), resultStringBuilder.length());
-				}
-				resultStringBuilder.append(line);
-				resultStringBuilder.append(linesperator);
-			}
-			newInputStream = new ByteArrayInputStream(resultStringBuilder.toString().getBytes());
-
-		} catch (Exception e) {
-			LOGGER.error("流数据规范化失败或者超时，e={}", e);
-			return null;
-		}
-
-		return newInputStream;
-	}
-	
-	/**
+    /**
 	 * 
 	 * 
 	 * 是否标准属性
@@ -425,10 +418,10 @@ public class CalendarDataUtil {
 		
 		return list;
 	}
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * 转化事件对象
 	 *
 	 * @author zl
@@ -438,41 +431,41 @@ public class CalendarDataUtil {
 	 * @return
 	 */
 	public static VEvent getEvent(CalendarDataVo calendarDataVo){
-		
+
 		if (calendarDataVo==null) {
 			return null;
 		}else if(calendarDataVo.getStartDate()==null || calendarDataVo.getEndDate()==null || calendarDataVo.getSummary()==null){
 			LOGGER.error("数据错误，calendarDataVo={}",JSONObject.toJSONString(calendarDataVo));
 			return null;
 		}
-		
+
 		try {
 			DateTime start = new DateTime(calendarDataVo.getStartDate());
 			DateTime end = new DateTime(calendarDataVo.getEndDate());
 			VEvent event = new VEvent(start, end, calendarDataVo.getSummary());
-			
-			UidGenerator ug = new UidGenerator(new HostInfo() {				
+
+			UidGenerator ug = new UidGenerator(new HostInfo() {
 				@Override
-				public String getHostName() { 
+				public String getHostName() {
 					return CalendarDataConstant.PROPERTY_UID_HOSTNAME;
 				}
 			}, "uidGen");
 			Uid uid = ug.generateUid();
 			event.getProperties().add(uid);
-			
-			
-			
+
+
+
 			return event;
 		} catch (Exception e) {
 			LOGGER.error("转化事件对象失败，calendarDataVo={},e={}",JSONObject.toJSONString(calendarDataVo), e);
 		}
-		
+
 		return null;
 	}
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * 转化事件列表
 	 *
 	 * @author zl
@@ -485,22 +478,22 @@ public class CalendarDataUtil {
 		if(dataList==null){
 			return null;
 		}
-		
+
 		List<VEvent> eventList = new ArrayList<>();
-		
+
 		for (CalendarDataVo calendarDataVo : dataList) {
 			VEvent event = getEvent(calendarDataVo);
-			if (event!=null) {				
+			if (event!=null) {
 				eventList.add(event);
 			}
 		}
-		
+
 		return eventList;
 	}
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * 获取日历对象
 	 *
 	 * @author zl
@@ -510,30 +503,30 @@ public class CalendarDataUtil {
 	 * @return
 	 */
 	public static Calendar getIcsCalendar(List<VEvent> eventList){
-		
+
 		net.fortuna.ical4j.model.Calendar icsCalendar = new net.fortuna.ical4j.model.Calendar();
 		icsCalendar.getProperties().add(new ProdId(CalendarDataConstant.PROPERTY_PRODID));
 		icsCalendar.getProperties().add(CalScale.GREGORIAN);
 		icsCalendar.getProperties().add(Version.VERSION_2_0);
 		try {
-			
+
 			if(eventList!=null && eventList.size()>0){
 				for (VEvent vEvent : eventList) {
 					icsCalendar.getComponents().add(vEvent);
 				}
-			} 
-			
+			}
+
 		} catch (Exception e) {
 			LOGGER.error("获取IcsCalendar失败，eventList={},e={}",JSONObject.toJSONString(eventList), e);
 		}
-		
+
 		return icsCalendar;
 	}
-	
-	
-	
+
+
+
 	/**
-	 * 
+	 *
 	 * 获取输出流
 	 *
 	 * @author zl
@@ -547,9 +540,9 @@ public class CalendarDataUtil {
 		if (calendarDataVoList == null || outputStream == null) {
 			return;
 		}
-		
+
 		Calendar icsCalendar = getIcsCalendar(getEventList(calendarDataVoList));
-		
+
 		try {
 			CalendarOutputter outputter = new CalendarOutputter();
 			outputter.output(icsCalendar, outputStream);
@@ -557,10 +550,10 @@ public class CalendarDataUtil {
 			outputStream.close();
 		} catch (Exception e) {
 			LOGGER.error("输出文件失败，calendarDataVoList={},icsCalendar={},e={}", calendarDataVoList, JSONObject.toJSONString(icsCalendar), e);
-		} 
-		
+		}
+
 	}
-	
+
 	
 	public class CalendarDataConstant{
 		
@@ -603,7 +596,7 @@ public class CalendarDataUtil {
 	 * @param
 	 * @return
 	 */
-	public static List<CalendarDataVo> transStreamToListVo(InputStream in){
+	public static List<CalendarDataVo> transStreamToListVo(InputStream in) throws Exception {
 		return getCalendarDataList(getCalendarData(normalizeInputStream(in)));
 	}
 	
@@ -646,7 +639,7 @@ public class CalendarDataUtil {
 		set.add("yyyy/MM/dd");
 		return set;
 	}
-	
+
 
 	/**
 	 * TODO
@@ -658,59 +651,18 @@ public class CalendarDataUtil {
 	 * @throws ParserException 
 	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws IOException, ParserException { 		
-		
-//		InputStream in =  getInputStreamByFilePath("D:\\Personal\\Downloads\\listing-17373819.ics");
-		//InputStream in = getInputStreamByUrl("https://www.airbnbchina.cn/calendar/ical/16582865.ics?s=f048109d9e534ca065555628ada9b5c6");
-//	  
-	    //List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(in)));
-//	    
-	    //System.out.println(JsonEntityTransform.Object2Json(list));
-		
-//		createCalendarData();
-		
-		/*Calendar icsCalendar = getIcsCalendar(getEventList(list));
-		calendarFileOutput(icsCalendar,"88jggfkf9");*/
-
-
-		/*List<CalendarDataVo> calendarDataVos = convertToList("https://www.airbnbchina.cn/calendar/ical/16582865.ics?s=f048109d9e534ca065555628ada9b5c6");
-		System.out.println(JsonEntityTransform.Object2Json(calendarDataVos));
-		LogUtil.info(LOGGER,"结果={}",JsonEntityTransform.Object2Json(calendarDataVos));*/
-
-        /*Set<String> ipSet = new HashSet<>();
-        ipSet.add("121.199.28.155:80");
-
-        CalendarDataUtil.initIpSet(ipSet);
-        String randomIp = CalendarDataUtil.getRandomIp(ipSet);*/
-     /* String randomIp = "202.202.90.20:8080";
-//        InputStream in = getInputStreamByUrl("https://www.airbnbchina.cn/calendar/ical/17539939.ics?s=0ef6c764be261e8e22776eaddb63e226",randomIp);
-        InputStream in = getInputStreamByUrl("https://www.airbnbchina.cn/calendar/ical/16582865.ics?s=f048109d9e534ca065555628ada9b5c6",randomIp);
-
-       List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(in)));
-        System.out.println(JSONObject.toJSONString(list));*/
-
-
+	public static void main(String[] args) throws IOException, ParserException {
         Map<String,String> headerMap = new HashMap<>();
         headerMap.put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1");
 		String s = HttpClientUtil.sendProxyGet("https://zh.airbnb.com/calendar/ical/17908318.ics?s=0e3f15c4f6e974281f4375b219ddc5d8", headerMap, "60.255.186.169", 8888);
 		System.err.println(s);
-		List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(new ByteArrayInputStream(s.getBytes()))));
-		System.out.println(JSONObject.toJSONString(list));
+		try{
+		    List<CalendarDataVo> list = getCalendarDataList(getCalendarData(normalizeInputStream(new ByteArrayInputStream(s.getBytes()))));
+            System.out.println(JSONObject.toJSONString(list));
+        } catch (Exception e) {
+
+        }
 
 	}
 	
-	/**
-	 * 
-	 * TODO
-	 *
-	 * @author baiwei
-	 * @created 2017年6月27日 下午3:27:07
-	 *
-	 */
-	public static void aaa(){
-//		List<CalendarDataVo> list=  getCalendarDataList(getCalendarData(normalizeInputStream(in)));
-//		Calendar icsCalendar = getIcsCalendar(getEventList(list));
-//		calendarFileOutput(icsCalendar,"88jggfkf9");
-	}
-
 }
