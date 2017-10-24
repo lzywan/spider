@@ -25,4 +25,5 @@ public interface AsyncService {
 
     void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, List<String> ipList);
 
+    boolean checkCalendarUrlAvailable(String calendarUrl, List<String> ipList);
 }
