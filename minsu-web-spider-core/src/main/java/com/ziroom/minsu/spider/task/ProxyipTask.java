@@ -51,7 +51,7 @@ public class ProxyipTask {
     @Autowired
     private ProxyipPipeline proxyipPipeline;
 
-    @Scheduled(cron = "11 11 0 * * ?")
+//    @Scheduled(cron = "11 11 0 * * ?")
     public void syncLockByPage() {
         LOGGER.info(logPreStr + "启动");
 
