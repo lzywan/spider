@@ -55,7 +55,9 @@ public class SyncLockTask {
             Map<String,String> paramMap = new HashMap<>();
             paramMap.put("page",String.valueOf(page));
             paramMap.put("limit",String.valueOf(limit));
-            String resultJson = HttpClientUtil.sendPost(airbnbRelateUrl, paramMap, null);
+            Map<String, String> headerMap = new HashMap<>();
+            headerMap.put("Accept","application/json");
+            String resultJson = HttpClientUtil.sendPost(airbnbRelateUrl, paramMap, headerMap);
             LOGGER.info("分页返回结果={}",resultJson);
 
             JSONObject resultObject = JSONObject.parseObject(resultJson);
