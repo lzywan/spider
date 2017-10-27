@@ -97,6 +97,7 @@ public class CalendarController {
         Result result = new Result();
         List<String> ipList = proxyIpPipelineService.listProxyIp();
         if (Check.NuNCollection(ipList)){
+            LOGGER.error("无可用ip");
             return result.setStatus(ResultCode.FAIL).setMessage("无可用ip");
         }
 

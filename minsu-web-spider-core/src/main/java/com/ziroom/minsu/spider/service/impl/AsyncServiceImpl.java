@@ -79,11 +79,16 @@ public class AsyncServiceImpl implements AsyncService{
      */
     @Async
     public void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, List<String> ipList){
-        Result result = new Result();
+
+        if(Check.NuNCollection(ipList)){
+            LOGGER.error("无可用ip");
+            return;
+        }
+
         //异步获取数据 重试3次
         List<CalendarDataVo> calendarDataVos = httpGetData(houseRelateDto.getCalendarUrl(), ipList, 3);
         if (Check.NuNCollection(calendarDataVos)){
-            LOGGER.info("请求日历没有结果或异常");
+            LOGGER.error("请求日历没有结果或异常");
             return;
         }
         // 保存ab原始数据
@@ -103,6 +108,8 @@ public class AsyncServiceImpl implements AsyncService{
             timeList.add(timeDataVo);
         }
         calendarTimeDataVo.setCalendarDataVos(timeList);
+
+        Result result = new Result();
         result.setData(calendarTimeDataVo);
         rabbitMqSender.send(RabbitMqConfiguration.lockMqName, result);
         LOGGER.info("发送日历mq数据={}", result);
