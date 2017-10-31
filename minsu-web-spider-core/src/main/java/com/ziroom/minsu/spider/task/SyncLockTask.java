@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,50 +47,59 @@ public class SyncLockTask {
     @Autowired
     private AsyncService asyncService;
 
-    @Scheduled(cron = "00 59 0/1 * * ?")
-    public void syncLockByPage(){
+//    @Scheduled(cron = "00 59 0/1 * * ?")
+    @Scheduled(cron = "00 0/5 * * * ?")
+    public void syncLockByPage() {
         LOGGER.info("定时任务开始执行 syncLockByPage");
         int page = 1;
-        int limit = 50;
-        for (;;){
-            Map<String,String> paramMap = new HashMap<>();
-            paramMap.put("page",String.valueOf(page));
-            paramMap.put("limit",String.valueOf(limit));
+        int limit = 100;
+        for (; ; ) {
+            Map<String, String> paramMap = new HashMap<>();
+            paramMap.put("page", String.valueOf(page));
+            paramMap.put("limit", String.valueOf(limit));
             Map<String, String> headerMap = new HashMap<>();
-            headerMap.put("Accept","application/json");
-            String resultJson = HttpClientUtil.sendPost(airbnbRelateUrl, paramMap, headerMap);
-            LOGGER.info("分页返回结果={}",resultJson);
+            headerMap.put("Accept", "application/json");
 
-            JSONObject resultObject = JSONObject.parseObject(resultJson);
-            Integer code = resultObject.getInteger("code");
-            if (code != 0){
-                LOGGER.error("房源日历关系分页接口异常");
-                break;
+            String resultJson = null;
+            for (int i = 0; Check.NuNStr(airbnbRelateUrl) && i < 3; i++) {
+                resultJson = HttpClientUtil.sendPost(airbnbRelateUrl, paramMap, headerMap);
             }
+            LOGGER.info("分页返回结果={}", resultJson);
 
-            JSONObject data = resultObject.getJSONObject("data");
-            JSONArray list = data.getJSONArray("list");
-            if (list.size() == 0){
-                break;
-            }
-            List<String> ipList = proxyIpPipelineService.listProxyIp();
-
-            for (int i = 0;i<list.size();i++){
-                JSONObject obj = (JSONObject) list.get(i);
-                HouseRelateDto houseRelateDto = new HouseRelateDto();
-                houseRelateDto.setHouseFid(obj.getString("houseFid"));
-                houseRelateDto.setRoomFid(obj.getString("roomFid"));
-                houseRelateDto.setRentWay(obj.getInteger("rentWay"));
-                houseRelateDto.setCalendarUrl(obj.getString("calendarUrl"));
-                houseRelateDto.setAbSn(obj.getString("abSn"));
-                if (Check.NuNCollection(ipList)){
-                    ipList = proxyIpPipelineService.listProxyIp();
+            if (!Check.NuNStr(resultJson)) {
+                JSONObject resultObject = JSONObject.parseObject(resultJson);
+                Integer code = resultObject.getInteger("code");
+                if (code != 0) {
+                    LOGGER.error("房源日历关系分页接口异常");
+                    break;
                 }
-                asyncService.saveHouseCalendarDateAndSendMq(houseRelateDto,ipList);
+
+                JSONObject data = resultObject.getJSONObject("data");
+                JSONArray list = data.getJSONArray("list");
+                if (list.size() == 0) {
+                    break;
+                }
+                List<String> ipList = proxyIpPipelineService.listProxyIp();
+
+                List<HouseRelateDto> houseRelateDtoList = new ArrayList<>();
+                for (int i = 0; i < list.size(); i++) {
+                    JSONObject obj = (JSONObject) list.get(i);
+                    HouseRelateDto houseRelateDto = new HouseRelateDto();
+                    houseRelateDto.setHouseFid(obj.getString("houseFid"));
+                    houseRelateDto.setRoomFid(obj.getString("roomFid"));
+                    houseRelateDto.setRentWay(obj.getInteger("rentWay"));
+                    houseRelateDto.setCalendarUrl(obj.getString("calendarUrl"));
+                    houseRelateDto.setAbSn(obj.getString("abSn"));
+                    houseRelateDtoList.add(houseRelateDto);
+                }
+
+                asyncService.saveHouseCalendarDateAndSendMq(houseRelateDtoList, ipList);
+
+                page++;
+            } else {
+                LOGGER.error("分页返回结果为空！airbnbRelateUrl={}, paramMap={}", airbnbRelateUrl, paramMap);
+                break;
             }
-
-            page++;
-
         }
 
     }

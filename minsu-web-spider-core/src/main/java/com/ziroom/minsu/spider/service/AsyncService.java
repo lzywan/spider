@@ -23,7 +23,7 @@ public interface AsyncService {
     Future<Boolean> checkProxyIp(String url, String ip, int port);
 
 
-    void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, List<String> ipList);
+    void saveHouseCalendarDateAndSendMq(List<HouseRelateDto> houseRelateDto, List<String> ipList);
 
     boolean checkCalendarUrlAvailable(String calendarUrl, List<String> ipList);
 }

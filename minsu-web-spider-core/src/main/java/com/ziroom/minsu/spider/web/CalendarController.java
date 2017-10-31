@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -78,7 +79,9 @@ public class CalendarController {
             return result.setStatus(ResultCode.FAIL).setMessage("无可用ip");
         }
         //异步方法调用
-        asyncService.saveHouseCalendarDateAndSendMq(houseRelateDto, ipList);
+        List<HouseRelateDto> list = new ArrayList<>();
+        list.add(houseRelateDto);
+        asyncService.saveHouseCalendarDateAndSendMq(list, ipList);
         return result;
     }
 

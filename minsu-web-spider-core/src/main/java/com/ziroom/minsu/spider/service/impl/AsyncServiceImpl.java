@@ -13,6 +13,7 @@ import com.ziroom.minsu.spider.domain.vo.TimeDataVo;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import com.ziroom.minsu.spider.service.AbHouseStatusService;
 import com.ziroom.minsu.spider.service.AsyncService;
+import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,9 @@ public class AsyncServiceImpl implements AsyncService{
     @Autowired
     private AbHouseStatusService abHouseStatusService;
 
+    @Autowired
+    private ProxyIpPipelineService proxyIpPipelineService;
+
     /**
      * @description: 异步调用httpclient,防止线程阻塞
      * @author: lusp
@@ -78,7 +82,16 @@ public class AsyncServiceImpl implements AsyncService{
      * @return
      */
     @Async
-    public void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, List<String> ipList){
+    public void saveHouseCalendarDateAndSendMq(List<HouseRelateDto> houseRelateDtoList, List<String> ipList){
+        for (HouseRelateDto houseRelateDto : houseRelateDtoList) {
+            if (Check.NuNCollection(ipList)) {
+                ipList = proxyIpPipelineService.listProxyIp();
+            }
+            saveHouseCalendarDateAndSendMq(houseRelateDto, ipList);
+        }
+    }
+
+    private void saveHouseCalendarDateAndSendMq(HouseRelateDto houseRelateDto, List<String> ipList){
 
         if(Check.NuNCollection(ipList)){
             LOGGER.error("无可用ip");
@@ -155,6 +168,8 @@ public class AsyncServiceImpl implements AsyncService{
                 if (result.indexOf("html") > 0) {
                     //代理ip不可用，换一个ip
                     ipList.remove(randomIp);
+                }else{
+                    break;
                 }
             } catch (IOException e) {
                 //连接超时等原因，换一个ip
@@ -165,6 +180,8 @@ public class AsyncServiceImpl implements AsyncService{
         try {
             if (!Check.NuNStr(result)) {
                 calendarDataVoList = CalendarDataUtil.transStreamToListVo(new ByteArrayInputStream(result.getBytes()));
+            } else {
+                LOGGER.error("获取日历失败：result为空");
             }
         } catch (Exception e) {
             LOGGER.info("获取日历失败：" + e.getMessage() + "e={}", e);
