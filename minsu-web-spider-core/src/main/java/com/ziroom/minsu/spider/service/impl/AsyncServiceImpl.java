@@ -13,7 +13,6 @@ import com.ziroom.minsu.spider.domain.vo.TimeDataVo;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import com.ziroom.minsu.spider.service.AbHouseStatusService;
 import com.ziroom.minsu.spider.service.AsyncService;
-import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,9 +56,6 @@ public class AsyncServiceImpl implements AsyncService{
     @Autowired
     private AbHouseStatusService abHouseStatusService;
 
-    @Autowired
-    private ProxyIpPipelineService proxyIpPipelineService;
-
     /**
      * @description: 异步调用httpclient,防止线程阻塞
      * @author: lusp
@@ -84,9 +80,6 @@ public class AsyncServiceImpl implements AsyncService{
     @Async
     public void saveHouseCalendarDateAndSendMq(List<HouseRelateDto> houseRelateDtoList, List<String> ipList){
         for (HouseRelateDto houseRelateDto : houseRelateDtoList) {
-            if (Check.NuNCollection(ipList)) {
-                ipList = proxyIpPipelineService.listProxyIp();
-            }
             saveHouseCalendarDateAndSendMq(houseRelateDto, ipList);
         }
     }
