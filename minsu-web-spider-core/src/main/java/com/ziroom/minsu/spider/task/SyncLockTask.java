@@ -61,7 +61,7 @@ public class SyncLockTask {
             headerMap.put("Accept", "application/json");
 
             String resultJson = null;
-            for (int i = 0; Check.NuNStr(airbnbRelateUrl) && i < 3; i++) {
+            for (int i = 0; Check.NuNStr(resultJson) && i < 3; i++) {
                 resultJson = HttpClientUtil.sendPost(airbnbRelateUrl, paramMap, headerMap);
             }
             LOGGER.info("分页返回结果={}", resultJson);
