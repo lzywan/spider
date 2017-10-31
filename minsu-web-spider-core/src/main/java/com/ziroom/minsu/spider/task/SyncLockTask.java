@@ -47,8 +47,7 @@ public class SyncLockTask {
     @Autowired
     private AsyncService asyncService;
 
-//    @Scheduled(cron = "00 59 0/1 * * ?")
-    @Scheduled(cron = "00 0/2 * * * ?")
+    @Scheduled(cron = "00 43 0/1 * * ?")
     public void syncLockByPage() {
         LOGGER.info("定时任务开始执行 syncLockByPage");
         int page = 1;
