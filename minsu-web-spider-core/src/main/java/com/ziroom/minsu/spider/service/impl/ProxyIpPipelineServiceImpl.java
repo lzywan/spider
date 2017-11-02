@@ -53,7 +53,6 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 	 * @return:
 	 */
 	@Async
-	@Transactional
 	@Override
 	public void asyncCheckProxyAndSave(ResultItems resultItems){
 		LOGGER.info("【asyncCheckProxyAndSave】代理ip持久化开始,resultItems:{}",resultItems);
