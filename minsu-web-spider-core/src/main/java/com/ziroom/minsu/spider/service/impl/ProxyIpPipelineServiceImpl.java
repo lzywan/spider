@@ -2,12 +2,12 @@ package com.ziroom.minsu.spider.service.impl;
 
 import com.ziroom.minsu.spider.config.db.ReadOnly;
 import com.ziroom.minsu.spider.core.utils.Check;
+import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
 import com.ziroom.minsu.spider.core.utils.UUIDGenerator;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
 import com.ziroom.minsu.spider.domain.constant.HttpConstant;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
-import com.ziroom.minsu.spider.service.AsyncService;
 import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +21,6 @@ import us.codecraft.webmagic.ResultItems;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  *
@@ -47,9 +45,6 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 	@Autowired
 	private NetProxyIpPortMapper netProxyIpPortMapper;
 
-	@Autowired
-	private AsyncService asyncService;
-
 	/**
 	 * @description: 启用多线程去判断代理ip是否可用，如果可用进行持久化
 	 * @author: lusp
@@ -65,33 +60,41 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 		try {
 			List<NetProxyIpPort> netProxyIpPorts = resultItems.get("netIps");
 			for (NetProxyIpPort netProxyIpPort : netProxyIpPorts) {
-				Future<Boolean> future = asyncService.checkProxyIp(HttpConstant.airbnbUrl,netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
-				long start = System.currentTimeMillis();
-				while (true){
-					long end = System.currentTimeMillis();
-					if(future.isDone()){
-						try {
-							Boolean isVailide = future.get();
-							if(isVailide){
-								netProxyIpPort.setFid(UUIDGenerator.hexUUID());
-								netProxyIpPortMapper.saveNetProxyIp(netProxyIpPort);
-							}else{
-								LOGGER.info("【asyncCheckProxyAndSave】Pipeline IP无效！ 网站:{}，ip={},port={}", resultItems.get("siteName"), netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
-							}
-						} catch (InterruptedException e) {
-							LOGGER.error("【asyncCheckProxyAndSave】中断异常：e={}", e);
-						} catch (ExecutionException e) {
-							LOGGER.error("【asyncCheckProxyAndSave】线程异常：e={}", e);
-						}
-						break;
-					}else {
-						if(end-start> HttpConstant.httpclient_tread_time_out){
-							future.cancel(true);
-							LOGGER.info("【asyncService.checkProxyIp】异步线程超时被关闭！Pipeline IP无效！ 网站:{}，ip={},port={}", resultItems.get("siteName"), netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
-							break;
-						}
-					}
-				}
+//				Future<Boolean> future = asyncService.checkProxyIp(HttpConstant.airbnbUrl,netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
+//				long start = System.currentTimeMillis();
+//				while (true){
+//					long end = System.currentTimeMillis();
+//					if(future.isDone()){
+//						try {
+//							Boolean isVailide = future.get();
+//							if(isVailide){
+//								netProxyIpPort.setFid(UUIDGenerator.hexUUID());
+//								netProxyIpPortMapper.saveNetProxyIp(netProxyIpPort);
+//							}else{
+//								LOGGER.info("【asyncCheckProxyAndSave】Pipeline IP无效！ 网站:{}，ip={},port={}", resultItems.get("siteName"), netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+//							}
+//						} catch (InterruptedException e) {
+//							LOGGER.error("【asyncCheckProxyAndSave】中断异常：e={}", e);
+//						} catch (ExecutionException e) {
+//							LOGGER.error("【asyncCheckProxyAndSave】线程异常：e={}", e);
+//						}
+//						break;
+//					}else {
+//						if(end-start> HttpConstant.httpclient_tread_time_out){
+//							future.cancel(true);
+//							LOGGER.info("【asyncService.checkProxyIp】异步线程超时被关闭！Pipeline IP无效！ 网站:{}，ip={},port={}", resultItems.get("siteName"), netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+//							break;
+//						}
+//					}
+//				}
+
+                boolean isVailide = HttpClientUtil.checkProxyIp(HttpConstant.airbnbUrl, netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
+                if(isVailide){
+                    netProxyIpPort.setFid(UUIDGenerator.hexUUID());
+                    netProxyIpPortMapper.saveNetProxyIp(netProxyIpPort);
+                }else{
+                    LOGGER.info("【asyncCheckProxyAndSave】Pipeline IP无效！ 网站:{}，ip={},port={}", resultItems.get("siteName"), netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+                }
 			}
 			LOGGER.info("【asyncCheckProxyAndSave】Pipeline处理完成，网站={}，当前页面={}，ip数量={}", resultItems.get("siteName"), resultItems.get("url"), netProxyIpPorts.size());
 		} catch (Exception e) {
@@ -108,7 +111,6 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 	 * @return:
 	 */
     @Scheduled(cron = "33 33 0/6 * * ? ")
-	@Transactional
 	@Async
 	@Override
 	public void checkProxyIpAvailable() {
@@ -123,36 +125,45 @@ public class ProxyIpPipelineServiceImpl implements ProxyIpPipelineService{
 					break;
 				}
 				for(NetProxyIpPort netProxyIpPort:netProxyIpPorts){
-					Future<Boolean> future = asyncService.checkProxyIp(HttpConstant.airbnbUrl,netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
-					long start = System.currentTimeMillis();
-					while (true){
-						long end = System.currentTimeMillis();
-						if(future.isDone()){
-							try {
-								Boolean isVailide = future.get();
-								if(!isVailide){
-									LOGGER.info("【checkProxyIpAvailable】该ip不可用！ip:{},port:{}",netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
-									netProxyIpPort.setIsValid(0);
-									netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
-								}else{
-									LOGGER.info("【checkProxyIpAvailable】该ip可用！ip:{},port:{}",netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
-								}
-							} catch (InterruptedException e) {
-								LOGGER.error("【checkProxyIpAvailable】中断异常：e={}", e);
-							} catch (ExecutionException e) {
-								LOGGER.error("【checkProxyIpAvailable】线程异常：e={}", e);
-							}
-							break;
-						}else {
-							if(end-start>HttpConstant.httpclient_tread_time_out){
-								future.cancel(true);
-								LOGGER.info("【asyncService.checkProxyIp】异步线程超时被关闭！Pipeline IP无效！ip={},port={}", netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
-								netProxyIpPort.setIsValid(0);
-								netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
-								break;
-							}
-						}
-					}
+//					Future<Boolean> future = asyncService.checkProxyIp(HttpConstant.airbnbUrl,netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
+//					long start = System.currentTimeMillis();
+//					while (true){
+//						long end = System.currentTimeMillis();
+//						if(future.isDone()){
+//							try {
+//								Boolean isVailide = future.get();
+//								if(!isVailide){
+//									LOGGER.info("【checkProxyIpAvailable】该ip不可用！ip:{},port:{}",netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+//									netProxyIpPort.setIsValid(0);
+//									netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
+//								}else{
+//									LOGGER.info("【checkProxyIpAvailable】该ip可用！ip:{},port:{}",netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+//								}
+//							} catch (InterruptedException e) {
+//								LOGGER.error("【checkProxyIpAvailable】中断异常：e={}", e);
+//							} catch (ExecutionException e) {
+//								LOGGER.error("【checkProxyIpAvailable】线程异常：e={}", e);
+//							}
+//							break;
+//						}else {
+//							if(end-start>HttpConstant.httpclient_tread_time_out){
+//								future.cancel(true);
+//								LOGGER.info("【asyncService.checkProxyIp】异步线程超时被关闭！Pipeline IP无效！ip={},port={}", netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+//								netProxyIpPort.setIsValid(0);
+//								netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
+//								break;
+//							}
+//						}
+//					}
+
+                    boolean isVailide = HttpClientUtil.checkProxyIp(HttpConstant.airbnbUrl, netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
+                    if(!isVailide){
+                        LOGGER.info("【checkProxyIpAvailable】该ip不可用！ip:{},port:{}",netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+                        netProxyIpPort.setIsValid(0);
+                        netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
+                    }else{
+                        LOGGER.info("【checkProxyIpAvailable】该ip可用！ip:{},port:{}",netProxyIpPort.getProxyIp(),netProxyIpPort.getProxyPort());
+                    }
 				}
 			}
 			LOGGER.info("【checkProxyIpAvailable】,检验代理ip可用性定时任务执行完毕！");

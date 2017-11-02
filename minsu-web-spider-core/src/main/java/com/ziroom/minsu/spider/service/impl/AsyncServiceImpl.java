@@ -57,20 +57,6 @@ public class AsyncServiceImpl implements AsyncService{
     private AbHouseStatusService abHouseStatusService;
 
     /**
-     * @description: 异步调用httpclient,防止线程阻塞
-     * @author: lusp
-     * @date: 2017/8/23 20:05
-     * @params: url,ip,port
-     * @return:
-     */
-    @Async
-    @Override
-    public Future<Boolean> checkProxyIp(String url, String ip, int port){
-        Boolean result = HttpClientUtil.checkProxyIp(url,ip,port);
-        return new AsyncResult<>(result);
-    }
-
-    /**
      * 异步任务执行 更新日历 和发送Mq数据
      * @author jixd
      * @created 2017年08月25日 11:27:06

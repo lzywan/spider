@@ -20,9 +20,6 @@ import java.util.concurrent.Future;
 
 public interface AsyncService {
 
-    Future<Boolean> checkProxyIp(String url, String ip, int port);
-
-
     void saveHouseCalendarDateAndSendMq(List<HouseRelateDto> houseRelateDto, List<String> ipList);
 
     boolean checkCalendarUrlAvailable(String calendarUrl, List<String> ipList);
