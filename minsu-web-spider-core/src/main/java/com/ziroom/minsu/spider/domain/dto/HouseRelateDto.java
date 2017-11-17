@@ -1,5 +1,8 @@
 package com.ziroom.minsu.spider.domain.dto;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+
 /**
  * <p>出租日历参数</p>
  * <p>
@@ -14,7 +17,7 @@ package com.ziroom.minsu.spider.domain.dto;
  * @Date Created in 2017年08月22日 15:48
  * @since 1.0
  */
-public class HouseRelateDto{
+public class HouseRelateDto {
 
     /**
      * 房源fid
@@ -31,6 +34,7 @@ public class HouseRelateDto{
     private Integer rentWay;
     /**
      * airbnb房源编号
+     *
      * @author jixd
      * @created 2017年08月23日 11:01:46
      * @param
@@ -80,5 +84,10 @@ public class HouseRelateDto{
 
     public void setAbSn(String abSn) {
         this.abSn = abSn;
+    }
+
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this, SerializerFeature.WriteMapNullValue);
     }
 }

@@ -1,10 +1,10 @@
-package com.ziroom.minsu.spider.service.processor;
+package com.ziroom.minsu.spider.proxyip.processor;
 
 
 import com.ziroom.minsu.spider.domain.enums.ProxyipSiteEnum;
-import com.ziroom.minsu.spider.service.processor.pageprocessor.Ip181dailiPageProcessor;
-import com.ziroom.minsu.spider.service.processor.pageprocessor.KuaidailiPageProcessor;
-import com.ziroom.minsu.spider.service.processor.pageprocessor.XicidailiPageProcessor;
+import com.ziroom.minsu.spider.proxyip.processor.pageprocessor.Ip181dailiPageProcessor;
+import com.ziroom.minsu.spider.proxyip.processor.pageprocessor.KuaidailiPageProcessor;
+import com.ziroom.minsu.spider.proxyip.processor.pageprocessor.XicidailiPageProcessor;
 import us.codecraft.webmagic.processor.PageProcessor;
 
 

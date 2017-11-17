@@ -18,14 +18,14 @@
     is_del, ip_source
   </sql>
   
-  <!-- 获取有效代理ip地址列表 -->
+  <!-- 根据更新时间 获取较老的有效代理ip地址列表 -->
   <select id="listNetProxyIp" parameterType="map" resultMap="BaseResultMap" >
     select 
     <include refid="Base_Column_List" />
     from t_net_proxy_ip_port
     where is_del = 0
     AND is_valid = 1
-    ORDER BY id DESC
+    ORDER BY last_modify_date asc
     LIMIT 100
   </select>
 

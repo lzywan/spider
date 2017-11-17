@@ -1,4 +1,4 @@
-package com.ziroom.minsu.spider.service.processor.pageprocessor;
+package com.ziroom.minsu.spider.proxyip.processor.pageprocessor;
 
 import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;

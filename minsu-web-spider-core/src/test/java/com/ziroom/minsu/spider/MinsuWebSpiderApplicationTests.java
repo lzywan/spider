@@ -3,7 +3,6 @@ package com.ziroom.minsu.spider;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
 import com.ziroom.minsu.spider.domain.XiaoZhuHouseInfo;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
-import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
 import com.ziroom.minsu.spider.service.XiaoZhuHouseService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,11 +28,7 @@ public class MinsuWebSpiderApplicationTests {
 	private XiaoZhuHouseService xiaoZhuHouseService;
 
 	@Autowired
-	private ProxyIpPipelineService proxyipPipeline;
-
-	@Autowired
 	private NetProxyIpPortMapper netProxyIpPortMapper;
-
 
 	@Test
 	public void testList(){

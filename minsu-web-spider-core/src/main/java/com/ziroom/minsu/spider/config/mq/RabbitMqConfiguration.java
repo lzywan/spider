@@ -27,13 +27,6 @@ import javax.annotation.PostConstruct;
 @Configuration
 public class RabbitMqConfiguration {
 
-    final static String queueName = "minsu_order_syncLock";
-
-    @Bean
-    Queue queue() {
-        return new Queue(queueName);
-    }
-
     public static String lockMqName;
 
     @Autowired

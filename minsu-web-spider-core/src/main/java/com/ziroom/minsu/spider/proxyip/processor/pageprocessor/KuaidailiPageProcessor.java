@@ -1,11 +1,11 @@
-package com.ziroom.minsu.spider.service.processor.pageprocessor;
+package com.ziroom.minsu.spider.proxyip.processor.pageprocessor;
 
 
 import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
 import com.ziroom.minsu.spider.domain.enums.ProxyTypeEnum;
 import com.ziroom.minsu.spider.domain.enums.ProxyipSiteEnum;
-import com.ziroom.minsu.spider.service.processor.SimpleHttpClientDownloader;
+import com.ziroom.minsu.spider.proxyip.processor.SimpleHttpClientDownloader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;

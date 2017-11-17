@@ -3,21 +3,21 @@ package com.ziroom.minsu.spider.web;
 import com.alibaba.fastjson.JSONObject;
 import com.ziroom.minsu.spider.core.result.Result;
 import com.ziroom.minsu.spider.core.result.ResultCode;
-import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.domain.dto.HouseRelateDto;
-import com.ziroom.minsu.spider.service.AsyncService;
-import com.ziroom.minsu.spider.service.ProxyIpPipelineService;
+import com.ziroom.minsu.spider.service.AsyncCalendarService;
+import com.ziroom.minsu.spider.task.SyncCalendarTasker;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * <p>同步锁</p>
@@ -33,17 +33,17 @@ import java.util.List;
  * @Date Created in 2017年08月22日 15:27
  * @since 1.0
  */
-@RestController
+@Controller
 @RequestMapping("/calendar")
 public class CalendarController {
 
     private static Logger LOGGER = LoggerFactory.getLogger(CalendarController.class);
 
     @Autowired
-    private ProxyIpPipelineService proxyIpPipelineService;
+    private AsyncCalendarService asyncCalendarService;
 
     @Autowired
-    private AsyncService asyncService;
+    private SyncCalendarTasker syncCalendarTasker;
 
     /**
      * 同步单个日历
@@ -74,15 +74,7 @@ public class CalendarController {
         }
 
         //开始读取日历数据
-        List<String> ipList = proxyIpPipelineService.listProxyIp();
-        if (Check.NuNCollection(ipList)){
-            return result.setStatus(ResultCode.FAIL).setMessage("无可用ip");
-        }
-        //异步方法调用
-        List<HouseRelateDto> list = new ArrayList<>();
-        list.add(houseRelateDto);
-        asyncService.saveHouseCalendarDateAndSendMq(list, ipList);
-        return result;
+        return result.setData(asyncCalendarService.syncHouseCalendar(houseRelateDto));
     }
 
     /**
@@ -96,17 +88,23 @@ public class CalendarController {
      */
     @RequestMapping(value = "/checkCalendarUrlAvailable", method = RequestMethod.POST)
     @ResponseBody
-    public Result checkCalendarUrlAvailable(String calendarUrl){
-        Result result = new Result();
-        List<String> ipList = proxyIpPipelineService.listProxyIp();
-        if (Check.NuNCollection(ipList)){
-            LOGGER.error("无可用ip");
-            return result.setStatus(ResultCode.FAIL).setMessage("无可用ip");
-        }
+    public Result checkCalendarUrlAvailable(HouseRelateDto houseRelateDto){
+        return new Result().setData(asyncCalendarService.checkCalendarUrlAvailable(houseRelateDto));
+    }
 
-        result.setData(asyncService.checkCalendarUrlAvailable(calendarUrl, ipList));
-
-        return result;
+    /**
+     * 
+     * 同步所有房源日历
+     * 
+     * @author zhangyl2
+     * @created 2017年11月16日 17:02
+     * @param 
+     * @return 
+     */
+    @RequestMapping(value = "/syncAllHouse")
+    public void syncAllHouse(HttpServletRequest request, HttpServletResponse response){
+        LOGGER.info("SyncCalendarTasker[同步房源日历接口]响应成功！");
+        syncCalendarTasker.runAsyncCalendar();
     }
 
 }

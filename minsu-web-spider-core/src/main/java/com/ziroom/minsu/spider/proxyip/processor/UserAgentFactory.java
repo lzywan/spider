@@ -1,4 +1,4 @@
-package com.ziroom.minsu.spider.service.processor;
+package com.ziroom.minsu.spider.proxyip.processor;
 
 
 import com.ziroom.minsu.spider.core.utils.Check;
