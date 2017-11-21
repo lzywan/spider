@@ -185,19 +185,19 @@ public class HttpClientUtil {
      */
     public static boolean checkProxyIp(String url, String ip, int port) {
         boolean flag = false;
-        CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(new DefaultHttpRequestRetryHandler(3, false)).build();
+        CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(new DefaultHttpRequestRetryHandler(0, false)).build();
         HttpGet httpGet = new HttpGet(url);
-        RequestConfig requestConfig = getRequestConfig(ip,port);
+        RequestConfig requestConfig = getRequestConfig(ip, port);
         httpGet.setConfig(requestConfig);
         CloseableHttpResponse response = null;
         try {
             response = httpclient.execute(httpGet);
             int status = response.getStatusLine().getStatusCode();
-            if(status>= HttpStatus.SC_OK&&status<=HttpStatus.SC_MULTIPLE_CHOICES){
+            if (status >= HttpStatus.SC_OK && status <= HttpStatus.SC_MULTIPLE_CHOICES) {
                 flag = true;
             }
         } catch (IOException e) {
-            LOGGER.info("【checkProxyIp】该代理ip地址不可用,ip:{},port:{}",ip,port);
+            LOGGER.info("【checkProxyIp】该代理ip地址不可用,ip:{},port:{}", ip, port);
         } finally {
             if (response != null) {
                 try {
