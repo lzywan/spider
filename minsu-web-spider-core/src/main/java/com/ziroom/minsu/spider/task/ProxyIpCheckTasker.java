@@ -77,12 +77,16 @@ public class ProxyIpCheckTasker {
                 }
                 for (NetProxyIpPort netProxyIpPort : netProxyIpPorts) {
                     boolean isVailide = HttpClientUtil.checkProxyIp(HttpConstant.airbnbUrl, netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
+                    int isValid;
                     if (!isVailide) {
                         LOGGER.info(logPreStr + "[代理ip检测]该ip不可用！ip:{},port:{}", netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
-                        netProxyIpPort.setIsValid(0);
-                        netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
+                        isValid = 0;
                     } else {
                         LOGGER.info(logPreStr + "[代理ip检测]该ip可用！ip:{},port:{}", netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
+                        isValid = 1;
+                    }
+                    if(isValid != netProxyIpPort.getIsValid()){
+                        netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
                     }
                 }
             }

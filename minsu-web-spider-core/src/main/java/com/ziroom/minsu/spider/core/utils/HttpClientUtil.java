@@ -212,16 +212,42 @@ public class HttpClientUtil {
 
     public static void main(String[] args) {
 
-        Map<String,String> paramMap = new HashMap<>();
-        paramMap.put("User-Agent","Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3");
-        String s = null;
-        try {
-            s = sendProxyGet("https://zh.airbnb.com/calendar/ical/19534577.ics?s=bc0b6fc6173428bc097d42526fc75988", paramMap, "121.31.150.25", 8123);
-        } catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.info("io");
+//        Map<String,String> paramMap = new HashMap<>();
+//        paramMap.put("User-Agent","Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3");
+//        String s = null;
+//        try {
+//            s = sendProxyGet("https://zh.airbnb.com/calendar/ical/19534577.ics?s=bc0b6fc6173428bc097d42526fc75988", paramMap, "121.31.150.25", 8123);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            LOGGER.info("io");
+//        }
+//        System.err.println(s);
+
+        List<Boolean> list = new ArrayList<>();
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "111.13.109.27", 80));
+
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "119.18.234.140", 80));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "116.85.17.182", 8080));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "103.233.157.234", 53281));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "112.5.175.234", 3128));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "121.201.58.204", 3128));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "112.95.190.85", 9797));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "163.125.29.246", 8118));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "183.62.196.10", 3128));
+
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+
+        for (Boolean b : list){
+            System.out.println(b);
         }
-        System.err.println(s);
 
 
     }
