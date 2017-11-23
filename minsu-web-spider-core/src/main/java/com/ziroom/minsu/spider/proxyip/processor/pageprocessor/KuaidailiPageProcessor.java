@@ -17,6 +17,8 @@ import us.codecraft.webmagic.proxy.SimpleProxyProvider;
 import us.codecraft.webmagic.selector.Selectable;
 import us.codecraft.webmagic.utils.ProxyUtils;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -51,6 +53,8 @@ public class KuaidailiPageProcessor implements PageProcessor {
 	private static final String PORT = "PORT";
 	
 	private static final String PROXYTYPE = "类型";
+
+    private static final String LAST_VALIDATE_TIME = "最后验证时间";
 	
     @Override
     // process是定制爬虫逻辑的核心接口，在这里编写抽取逻辑
@@ -98,7 +102,16 @@ public class KuaidailiPageProcessor implements PageProcessor {
 							// 其他类型则忽略当前行
 							continue outer;
 						}
-					}
+					} else if (LAST_VALIDATE_TIME.equals(title)) {
+                        // 最后验证时间
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Date lastValidate = dateFormat.parse(value);
+                        if (this.getTime(-2).after(lastValidate)) {
+                            // 抓到2天以前的，直接舍弃当前页后续的行数据，并且不追加后续的页面了
+                            continueSpiderOther = false;
+                            break outer;
+                        }
+                    }
 				}
 
 				if (!Check.NuNStr(netProxyIpPort.getProxyIp())
@@ -139,6 +152,33 @@ public class KuaidailiPageProcessor implements PageProcessor {
     @Override
     public Site getSite() {
         return site;
+    }
+
+    /**
+     * 获取几天前或几天后的日期
+     *
+     * @param day
+     *            可为负数,为负数时代表获取之前的日期.为正数,代表获取之后的日期
+     * @return
+     */
+    public static Date getTime(final int day) {
+        return getTime(new Date(), day);
+    }
+
+    /**
+     * 获取指定日期几天前或几天后的日期
+     *
+     * @param date
+     *            指定的日期
+     * @param day
+     *            可为负数, 为负数时代表获取之前的日志.为正数,代表获取之后的日期
+     * @return
+     */
+    public static Date getTime(final Date date, final int day) {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + day);
+        return calendar.getTime();
     }
     
     public static void main(String[] args) {
