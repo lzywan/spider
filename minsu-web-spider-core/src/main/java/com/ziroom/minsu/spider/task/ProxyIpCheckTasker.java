@@ -2,16 +2,14 @@ package com.ziroom.minsu.spider.task;
 
 import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
-import com.ziroom.minsu.spider.core.utils.RedisUtil;
+import com.ziroom.minsu.spider.service.RedisService;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
 import com.ziroom.minsu.spider.domain.constant.HttpConstant;
-import com.ziroom.minsu.spider.domain.constant.SystemConstant;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -40,7 +38,7 @@ public class ProxyIpCheckTasker {
     private static final String PROXYIP_CHECK_TASKER_THREAD_NAME = "PROXYIP_CHECK_TASKER_THREAD_NAME-";
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisService redisService;
 
     @Autowired
     private NetProxyIpPortMapper netProxyIpPortMapper;
@@ -58,7 +56,7 @@ public class ProxyIpCheckTasker {
             }
         }
 
-        if (RedisUtil.checkDistributed(redisTemplate, SystemConstant.REDIS_PRE + PROXYIP_CHECK_TASKER_THREAD_NAME, 1800)) {
+        if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME, 1800)) {
             LOGGER.info(logPreStr + "[代理ip检测线程]别的机器已经启动或尚未结束!请勿重复调用！");
         }else {
             try {
@@ -67,7 +65,7 @@ public class ProxyIpCheckTasker {
                     checkProxyIpAvailable();
 
                     // 删除锁
-                    redisTemplate.delete(SystemConstant.REDIS_PRE + PROXYIP_CHECK_TASKER_THREAD_NAME);
+                    redisService.releaseDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME);
                 });
 
                 thread.setName(PROXYIP_CHECK_TASKER_THREAD_NAME);

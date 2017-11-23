@@ -4,16 +4,14 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
-import com.ziroom.minsu.spider.core.utils.RedisUtil;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
-import com.ziroom.minsu.spider.domain.constant.SystemConstant;
 import com.ziroom.minsu.spider.domain.dto.HouseRelateDto;
 import com.ziroom.minsu.spider.service.AsyncCalendarService;
+import com.ziroom.minsu.spider.service.RedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -51,7 +49,7 @@ public class SyncCalendarTasker {
     private AsyncCalendarService asyncCalendarService;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisService redisService;
 
 
     /**
@@ -76,7 +74,7 @@ public class SyncCalendarTasker {
             }
         }
 
-        if (RedisUtil.checkDistributed(redisTemplate, SystemConstant.REDIS_PRE + SYNC_CALENDAR_TASKER_THREAD_NAME, 1800)) {
+        if (redisService.getDistributedLock(SYNC_CALENDAR_TASKER_THREAD_NAME, 1800)) {
             LOGGER.info(logPreStr + "[同步房源日历线程]别的机器已经启动或尚未结束!请勿重复调用！");
         } else {
             try {

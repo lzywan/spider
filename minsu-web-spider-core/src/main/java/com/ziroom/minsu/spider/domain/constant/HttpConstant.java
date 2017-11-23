@@ -41,7 +41,7 @@ public class HttpConstant {
     /**
      * 验证代理ip是否可用的访问地址
      */
-    public static String airbnbUrl = "https://www.airbnbchina.cn/";
+    public static String airbnbUrl = "https://zh.airbnb.com/";
 
 
     /**

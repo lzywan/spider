@@ -1,17 +1,15 @@
 package com.ziroom.minsu.spider.task;
 
 import com.ziroom.minsu.spider.core.utils.Check;
-import com.ziroom.minsu.spider.core.utils.RedisUtil;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
-import com.ziroom.minsu.spider.domain.constant.SystemConstant;
 import com.ziroom.minsu.spider.domain.enums.ProxyipSiteEnum;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import com.ziroom.minsu.spider.proxyip.processor.PageProcessorFactory;
 import com.ziroom.minsu.spider.proxyip.processor.SimpleHttpClientDownloader;
+import com.ziroom.minsu.spider.service.RedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.pipeline.Pipeline;
@@ -57,7 +55,7 @@ public class ProxyipSpiderTasker {
     private Pipeline pipeline;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisService redisService;
 
 	/**
 	 *
@@ -80,7 +78,7 @@ public class ProxyipSpiderTasker {
 			}
 		}
 
-		if (RedisUtil.checkDistributed(redisTemplate, SystemConstant.REDIS_PRE + PROXYIP_SPIDER_TASKER_THREAD_NAME, 1800)) {
+		if (redisService.getDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME, 1800)) {
             LOGGER.info(logPreStr + "[代理ip爬虫线程]别的机器已经启动或尚未结束!请勿重复调用！");
 		} else {
 			try {
@@ -107,7 +105,7 @@ public class ProxyipSpiderTasker {
                         startSpiderTasker(ProxyipSiteEnum.XICI_DAILI);
 
                         // 删除锁
-                        redisTemplate.delete(SystemConstant.REDIS_PRE + PROXYIP_SPIDER_TASKER_THREAD_NAME);
+                        redisService.releaseDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME);
                     } else {
                         LOGGER.error(logPreStr + "无可用ip");
                     }
