@@ -43,14 +43,18 @@ public class ProxyIpCheckTasker {
     private NetProxyIpPortMapper netProxyIpPortMapper;
 
     public void runAsyncCheck() {
-        if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME)) {
-            LOGGER.info(logPreStr + "[代理ip检测线程]启动！");
-            checkProxyIpAvailable();
-            // 删除锁
-            redisService.releaseDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME);
-        } else {
-            LOGGER.info(logPreStr + "[代理ip检测线程]已经启动或尚未结束!请勿重复调用！");
-        }
+        Thread thread = new Thread(() -> {
+            if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME)) {
+                LOGGER.info(logPreStr + "[代理ip检测线程]启动！");
+                checkProxyIpAvailable();
+                // 删除锁
+                redisService.releaseDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME);
+            } else {
+                LOGGER.info(logPreStr + "[代理ip检测线程]已经启动或尚未结束!请勿重复调用！");
+            }
+        });
+        thread.setName(PROXYIP_CHECK_TASKER_THREAD_NAME);
+        thread.start();
     }
 
     /**
