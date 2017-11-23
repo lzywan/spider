@@ -228,7 +228,7 @@ public class AsyncCalendarServiceImpl implements AsyncCalendarService {
             try {
                 calendarDataVoList = CalendarDataUtil.transStreamToListVo(new ByteArrayInputStream(result.getBytes()));
             } catch (Exception e) {
-                LOGGER.info(logPreStr + "[读取日历数据]解析异常！e={}，当前房源={}", houseRelateDto);
+                LOGGER.info(logPreStr + "[读取日历数据]解析异常！e={}，当前房源={}", e, houseRelateDto);
             }
         } else {
             LOGGER.info(logPreStr + "[读取日历数据]日历地址数据为空！当前房源={}", houseRelateDto);
