@@ -45,12 +45,15 @@ public class RedisService {
             // key存在
             Object o = redisTemplate.opsForValue().get(lockKey);
             // 判断是否过期
-            if (!Check.NuNObj(o) && (long) o < now) {
-                String originValue = new String(redisTemplate.getConnectionFactory()
+            if (!Check.NuNObj(o) && Long.parseLong(o.toString()) < now) {
+                byte[] bytes = redisTemplate.getConnectionFactory()
                         .getConnection()
-                        .getSet(lockKey.getBytes(), String.valueOf(now + MAX_WAIT_LOCK_TIME_OUT * 1000).getBytes()));
+                        .getSet(lockKey.getBytes(), String.valueOf(now + MAX_WAIT_LOCK_TIME_OUT * 1000).getBytes());
 
-                if (originValue.equals(o)) {
+                String originValue = Check.NuNObj(bytes) ? null : new String(bytes);
+
+                // 这里存在并发情况，比较获取的原始值与getSet返回值相等，则才能获取锁
+                if (!Check.NuNStr(originValue) && originValue.equals(o)) {
                     return true;
                 }
 
