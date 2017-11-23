@@ -5,6 +5,7 @@ import com.ziroom.minsu.spider.domain.NetProxyIpPort;
 import com.ziroom.minsu.spider.domain.enums.ProxyipSiteEnum;
 import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import com.ziroom.minsu.spider.proxyip.processor.PageProcessorFactory;
+import com.ziroom.minsu.spider.proxyip.processor.ProxyipPipeline;
 import com.ziroom.minsu.spider.proxyip.processor.SimpleHttpClientDownloader;
 import com.ziroom.minsu.spider.service.RedisService;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class ProxyipSpiderTasker {
     private NetProxyIpPortMapper netProxyIpPortMapper;
 
     @Autowired
-    private Pipeline pipeline;
+    private ProxyipPipeline proxyipPipeline;
 
     @Autowired
     private RedisService redisService;
@@ -66,58 +67,37 @@ public class ProxyipSpiderTasker {
 	 *
 	 */
 	public void runAsyncSpider() {
+		if (redisService.getDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME)) {
+            LOGGER.info(logPreStr + "[代理ip爬虫线程]启动！");
 
-		Thread[] threads = new Thread[Thread.activeCount()];
-		Thread.enumerate(threads);
-		if (!Check.NuNObject(threads)) {
-			for (Thread th : threads) {
-				if (th.getName().startsWith(PROXYIP_SPIDER_TASKER_THREAD_NAME) && th.isAlive()) {
-                    LOGGER.info(logPreStr + "[代理ip爬虫线程]已经启动或尚未结束!请勿重复调用！");
-                    return;
-				}
-			}
-		}
+            // 设置库里可用的ip做代理池
+            // 获取有效代理ip地址列表
+            List<NetProxyIpPort> ipList = netProxyIpPortMapper.listNetProxyIp();
+            proxysList = new ArrayList<>();
+            if (!Check.NuNCollection(ipList)) {
+                for (NetProxyIpPort netProxyIpPort : ipList) {
+                    Proxy proxy = new Proxy(netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort(), "", "");
+                    proxysList.add(proxy);
+                }
 
-		if (redisService.getDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME, 1800)) {
-            LOGGER.info(logPreStr + "[代理ip爬虫线程]别的机器已经启动或尚未结束!请勿重复调用！");
+                // 配置WebMagic代理
+                simpleHttpClientDownloader = new SimpleHttpClientDownloader();
+                simpleHttpClientDownloader.setProxyProvider(new SimpleProxyProvider(Collections.unmodifiableList(proxysList)));
+
+                // 开始串行爬取任务
+                startSpiderTasker(ProxyipSiteEnum.KUAI_DAILI);
+                startSpiderTasker(ProxyipSiteEnum.IP_181_DAILI);
+                startSpiderTasker(ProxyipSiteEnum.XICI_DAILI);
+
+                // 删除锁
+                redisService.releaseDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME);
+            } else {
+                LOGGER.error(logPreStr + "无可用ip");
+            }
+
 		} else {
-			try {
-				Thread thread = new Thread(() -> {
-                    LOGGER.info(logPreStr + "[代理ip爬虫线程]已经启动！");
-
-                    // 设置库里可用的ip做代理池
-                    // 获取有效代理ip地址列表
-                    List<NetProxyIpPort> ipList = netProxyIpPortMapper.listNetProxyIp();
-                    proxysList = new ArrayList<>();
-                    if (!Check.NuNCollection(ipList)) {
-                        for (NetProxyIpPort netProxyIpPort : ipList) {
-                            Proxy proxy = new Proxy(netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort(), "", "");
-                            proxysList.add(proxy);
-                        }
-
-                        // 配置WebMagic代理
-                        simpleHttpClientDownloader = new SimpleHttpClientDownloader();
-                        simpleHttpClientDownloader.setProxyProvider(new SimpleProxyProvider(Collections.unmodifiableList(proxysList)));
-
-                        // 开始串行爬取任务
-                        startSpiderTasker(ProxyipSiteEnum.KUAI_DAILI);
-                        startSpiderTasker(ProxyipSiteEnum.IP_181_DAILI);
-                        startSpiderTasker(ProxyipSiteEnum.XICI_DAILI);
-
-                        // 删除锁
-                        redisService.releaseDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME);
-                    } else {
-                        LOGGER.error(logPreStr + "无可用ip");
-                    }
-				});
-
-				thread.setName(PROXYIP_SPIDER_TASKER_THREAD_NAME);
-                LOGGER.info(logPreStr + "[代理ip爬虫线程][{}]准备启动！", PROXYIP_SPIDER_TASKER_THREAD_NAME);
-				thread.start();
-			} catch (Exception e) {
-                LOGGER.error(logPreStr + "[代理ip爬虫线程]启动异常！ e={}", e);
-			}
-		}
+            LOGGER.info(logPreStr + "[代理ip爬虫线程]已经启动或尚未结束!请勿重复调用！");
+        }
 	}
 
 	/**
@@ -145,7 +125,7 @@ public class ProxyipSpiderTasker {
 		    // Spider开始爬取
 			Spider.create(pageProcessor)
 				.addUrl(url)
-				.addPipeline(pipeline)
+				.addPipeline(proxyipPipeline)
 				.setDownloader(simpleHttpClientDownloader)
 				.thread(1)
 				.run();

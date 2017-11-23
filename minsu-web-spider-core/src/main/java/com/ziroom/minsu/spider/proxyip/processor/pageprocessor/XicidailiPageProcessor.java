@@ -11,11 +11,7 @@ import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.selector.Selectable;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -50,8 +46,8 @@ public class XicidailiPageProcessor implements PageProcessor {
     	
         List<Selectable> trs = page.getHtml().xpath("//table[@id='ip_list']/tbody/tr").nodes();
         
-        List<NetProxyIpPort> netProxyIpPorts = new ArrayList<NetProxyIpPort>();
-        NetProxyIpPort netProxyIpPort = null;
+        List<NetProxyIpPort> netProxyIpPorts = new ArrayList<>();
+        NetProxyIpPort netProxyIpPort;
         
         // 是否继续抓取其他列表页
         boolean continueSpiderOther = true;
@@ -86,14 +82,6 @@ public class XicidailiPageProcessor implements PageProcessor {
 					} else {
 						// 其他类型则忽略当前行
 						continue;
-					}
-					// 最后验证时间
-					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-					Date lastValidate = dateFormat.parse(tds.get(9).$("td", "text").get());
-					if (this.getTime(-2).after(lastValidate)) {
-						// 抓到2天以前的，直接舍弃当前页后续的行数据，并且不追加后续的页面了
-						continueSpiderOther = false;
-						break;
 					}
 				}
 
@@ -156,34 +144,5 @@ public class XicidailiPageProcessor implements PageProcessor {
 //			.thread(1)
 //			.run();
 //	}
-
-	/**
-	 * 获取几天前或几天后的日期
-	 *
-	 * @param day
-	 *            可为负数,为负数时代表获取之前的日期.为正数,代表获取之后的日期
-	 * @return
-	 */
-	public static Date getTime(final int day) {
-		return getTime(new Date(), day);
-	}
-
-	/**
-	 * 获取指定日期几天前或几天后的日期
-	 *
-	 * @param date
-	 *            指定的日期
-	 * @param day
-	 *            可为负数, 为负数时代表获取之前的日志.为正数,代表获取之后的日期
-	 * @return
-	 */
-	public static Date getTime(final Date date, final int day) {
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + day);
-		return calendar.getTime();
-	}
-
-
 
 }

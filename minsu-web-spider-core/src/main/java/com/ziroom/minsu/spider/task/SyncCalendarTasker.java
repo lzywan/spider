@@ -63,32 +63,11 @@ public class SyncCalendarTasker {
      */
     public void runAsyncCalendar() {
 
-        Thread[] threads = new Thread[Thread.activeCount()];
-        Thread.enumerate(threads);
-        if (!Check.NuNObject(threads)) {
-            for (Thread th : threads) {
-                if (th.getName().startsWith(SYNC_CALENDAR_TASKER_THREAD_NAME) && th.isAlive()) {
-                    LOGGER.info(logPreStr + "[同步房源日历线程]已经启动或尚未结束!请勿重复调用！");
-                    return;
-                }
-            }
-        }
-
-        if (redisService.getDistributedLock(SYNC_CALENDAR_TASKER_THREAD_NAME, 1800)) {
-            LOGGER.info(logPreStr + "[同步房源日历线程]别的机器已经启动或尚未结束!请勿重复调用！");
+        if (redisService.getDistributedLock(SYNC_CALENDAR_TASKER_THREAD_NAME)) {
+            LOGGER.info(logPreStr + "[同步房源日历线程]启动！");
+            startSyncCalendarTasker();
         } else {
-            try {
-                Thread thread = new Thread(() -> {
-                    LOGGER.info(logPreStr + "[同步房源日历线程]已经启动！");
-                    startSyncCalendarTasker();
-                });
-
-                thread.setName(SYNC_CALENDAR_TASKER_THREAD_NAME);
-                LOGGER.info(logPreStr + "[同步房源日历线程][{}]准备启动！", SYNC_CALENDAR_TASKER_THREAD_NAME);
-                thread.start();
-            } catch (Exception e) {
-                LOGGER.error(logPreStr + "[同步房源日历线程]启动异常！e={}", e);
-            }
+            LOGGER.info(logPreStr + "[同步房源日历线程]已经启动或尚未结束!请勿重复调用！");
         }
     }
 

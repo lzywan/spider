@@ -49,7 +49,7 @@ public class Ip181dailiPageProcessor implements PageProcessor {
     	
         List<Selectable> trs = page.getHtml().xpath("//table[@class='table table-hover panel-default panel ctable']/tbody/tr").nodes();
         
-        List<NetProxyIpPort> netProxyIpPorts = new ArrayList<NetProxyIpPort>();
+        List<NetProxyIpPort> netProxyIpPorts = new ArrayList<>();
         NetProxyIpPort netProxyIpPort = null;
         
         // 去掉表头

@@ -1,6 +1,5 @@
 package com.ziroom.minsu.spider.task;
 
-import com.ziroom.minsu.spider.core.utils.Check;
 import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
 import com.ziroom.minsu.spider.service.RedisService;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
@@ -44,36 +43,13 @@ public class ProxyIpCheckTasker {
     private NetProxyIpPortMapper netProxyIpPortMapper;
 
     public void runAsyncCheck() {
-
-        Thread[] threads = new Thread[Thread.activeCount()];
-        Thread.enumerate(threads);
-        if (!Check.NuNObject(threads)) {
-            for (Thread th : threads) {
-                if (th.getName().startsWith(PROXYIP_CHECK_TASKER_THREAD_NAME) && th.isAlive()) {
-                    LOGGER.info(logPreStr + "[代理ip检测线程]已经启动或尚未结束!请勿重复调用！");
-                    return;
-                }
-            }
-        }
-
-        if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME, 1800)) {
-            LOGGER.info(logPreStr + "[代理ip检测线程]别的机器已经启动或尚未结束!请勿重复调用！");
-        }else {
-            try {
-                Thread thread = new Thread(() -> {
-                    LOGGER.info(logPreStr + "[代理ip检测线程]已经启动！");
-                    checkProxyIpAvailable();
-
-                    // 删除锁
-                    redisService.releaseDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME);
-                });
-
-                thread.setName(PROXYIP_CHECK_TASKER_THREAD_NAME);
-                LOGGER.info(logPreStr + "[代理ip检测线程][{}]准备启动！", PROXYIP_CHECK_TASKER_THREAD_NAME);
-                thread.start();
-            } catch (Exception e) {
-                LOGGER.error(logPreStr + "[代理ip检测线程]启动异常！e={}", e);
-            }
+        if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME)) {
+            LOGGER.info(logPreStr + "[代理ip检测线程]启动！");
+            checkProxyIpAvailable();
+            // 删除锁
+            redisService.releaseDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME);
+        } else {
+            LOGGER.info(logPreStr + "[代理ip检测线程]已经启动或尚未结束!请勿重复调用！");
         }
     }
 

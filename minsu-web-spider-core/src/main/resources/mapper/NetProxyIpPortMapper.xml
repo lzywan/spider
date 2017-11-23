@@ -42,7 +42,6 @@
     <include refid="Base_Column_List" />
     from t_net_proxy_ip_port
     where is_del = 0
-    AND is_valid = 1
   </select>
 
   <update id="updateProxyIpUseCount" parameterType="map">
