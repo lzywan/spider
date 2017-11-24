@@ -13,7 +13,6 @@ import us.codecraft.webmagic.selector.Selectable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * 
@@ -113,13 +112,6 @@ public class XicidailiPageProcessor implements PageProcessor {
         	page.putField("url", page.getUrl());
         	page.putField("netIps", netProxyIpPorts);
         }
-        
-		try {
-			int sleepTime = new Random().nextInt(2000) + 1000;
-			Thread.sleep(sleepTime);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		
 		if (continueSpiderOther) {
 			page.addTargetRequests(page.getHtml().xpath("//div[@class=\"pagination\"]").links().regex("http://www\\.xicidaili\\.com/nn/\\d+").all());

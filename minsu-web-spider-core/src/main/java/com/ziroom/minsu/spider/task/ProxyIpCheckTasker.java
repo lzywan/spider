@@ -86,6 +86,7 @@ public class ProxyIpCheckTasker {
                         isValid = 1;
                     }
                     if(isValid != netProxyIpPort.getIsValid()){
+                        netProxyIpPort.setIsValid(isValid);
                         netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
                     }
                 }

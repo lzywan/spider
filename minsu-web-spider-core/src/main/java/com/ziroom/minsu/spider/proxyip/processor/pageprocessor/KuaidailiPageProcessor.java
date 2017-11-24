@@ -18,9 +18,7 @@ import us.codecraft.webmagic.selector.Selectable;
 import us.codecraft.webmagic.utils.ProxyUtils;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 /**
