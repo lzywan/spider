@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -224,16 +223,15 @@ public class HttpClientUtil {
 //        System.err.println(s);
 
         List<Boolean> list = new ArrayList<>();
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "111.13.109.27", 80));
-
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "119.18.234.140", 80));
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "116.85.17.182", 8080));
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "103.233.157.234", 53281));
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "112.5.175.234", 3128));
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "121.201.58.204", 3128));
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "112.95.190.85", 9797));
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "163.125.29.246", 8118));
-        list.add(checkProxyIp(HttpConstant.airbnbUrl, "183.62.196.10", 3128));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "183.221.245.207", 80));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "182.234.7.94", 8888));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "114.24.112.55", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "218.87.170.179", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "101.4.60.50", 80));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "140.124.72.74", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "1.163.88.127", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "112.192.234.123", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "111.252.50.214", 8088));
 
         System.out.println();
         System.out.println();
