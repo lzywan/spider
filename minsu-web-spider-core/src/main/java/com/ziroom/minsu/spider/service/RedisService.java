@@ -14,7 +14,7 @@ public class RedisService {
 
     private static final String REDIS_PRE = "minsu:redis:spider:";
 
-    private static final int MAX_WAIT_LOCK_TIME_OUT = 3600;
+    private static final int MAX_WAIT_LOCK_TIME_OUT = 1800;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -53,7 +53,7 @@ public class RedisService {
                 String originValue = Check.NuNObj(bytes) ? null : new String(bytes);
 
                 // 这里存在并发情况，比较获取的原始值与getSet返回值相等，则才能获取锁
-                if (!Check.NuNStr(originValue) && originValue.equals(o)) {
+                if (o.toString().equals(originValue)) {
                     return true;
                 }
 

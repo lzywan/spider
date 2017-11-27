@@ -53,25 +53,22 @@ public class SyncCalendarTasker {
 
 
     /**
-     * 
      * 同步房源日历线程防御性容错
-     * 
+     *
+     * @param
+     * @return
      * @author zhangyl2
      * @created 2017年11月16日 16:40
-     * @param 
-     * @return 
      */
     public void runAsyncCalendar() {
-        Thread thread = new Thread(() -> {
-            if (redisService.getDistributedLock(SYNC_CALENDAR_TASKER_THREAD_NAME)) {
-                LOGGER.info(logPreStr + "[同步房源日历线程]启动！");
-                startSyncCalendarTasker();
-            } else {
-                LOGGER.info(logPreStr + "[同步房源日历线程]已经启动或尚未结束!请勿重复调用！");
-            }
-        });
-        thread.setName(SYNC_CALENDAR_TASKER_THREAD_NAME);
-        thread.start();
+        if (redisService.getDistributedLock(SYNC_CALENDAR_TASKER_THREAD_NAME)) {
+            LOGGER.info(logPreStr + "[同步房源日历线程]启动！");
+            Thread thread = new Thread(() -> startSyncCalendarTasker());
+            thread.setName(SYNC_CALENDAR_TASKER_THREAD_NAME);
+            thread.start();
+        } else {
+            LOGGER.info(logPreStr + "[同步房源日历线程]已经启动或尚未结束!请勿重复调用！");
+        }
     }
 
     public void startSyncCalendarTasker() {
@@ -100,7 +97,7 @@ public class SyncCalendarTasker {
             }
             data = resultObject.getJSONObject("data");
             JSONArray list = data.getJSONArray("list");
-            if(Check.NuNCollection(list)){
+            if (Check.NuNCollection(list)) {
                 break;
             }
 
@@ -123,13 +120,12 @@ public class SyncCalendarTasker {
     }
 
     /**
-     * 
      * 分页获取
-     * 
+     *
+     * @param
+     * @return
      * @author zhangyl2
      * @created 2017年11月17日 13:42
-     * @param 
-     * @return 
      */
     private JSONObject getRelateResult(int page, int limit) {
         Map<String, String> paramMap = new HashMap<>();

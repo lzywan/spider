@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import us.codecraft.webmagic.Spider;
-import us.codecraft.webmagic.pipeline.Pipeline;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.proxy.SimpleProxyProvider;
@@ -23,9 +22,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
  * <p>代理ipService</p>
- *
+ * <p>
  * <PRE>
  * <BR>	修改记录
  * <BR>-----------------------------------------------
@@ -33,8 +31,8 @@ import java.util.List;
  * </PRE>
  *
  * @author zhangyl
- * @since 1.0
  * @version 1.0
+ * @since 1.0
  */
 @Component
 public class ProxyipSpiderTasker {
@@ -58,19 +56,16 @@ public class ProxyipSpiderTasker {
     @Autowired
     private RedisService redisService;
 
-	/**
-	 *
-	 * 爬虫线程防御性容错
-	 *
-	 * @author zhangyl
-	 * @created 2017年7月10日 下午7:21:29
-	 *
-	 */
-	public void runAsyncSpider() {
-        Thread thread = new Thread(() -> {
-            if (redisService.getDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME)) {
-                LOGGER.info(logPreStr + "[代理ip爬虫线程]启动！");
-
+    /**
+     * 爬虫线程防御性容错
+     *
+     * @author zhangyl
+     * @created 2017年7月10日 下午7:21:29
+     */
+    public void runAsyncSpider() {
+        if (redisService.getDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME)) {
+            LOGGER.info(logPreStr + "[代理ip爬虫线程]启动！");
+            Thread thread = new Thread(() -> {
                 // 设置库里可用的ip做代理池
                 // 获取有效代理ip地址列表
                 List<NetProxyIpPort> ipList = netProxyIpPortMapper.listNetProxyIp();
@@ -95,49 +90,45 @@ public class ProxyipSpiderTasker {
                 } else {
                     LOGGER.error(logPreStr + "无可用ip");
                 }
+            });
+            thread.setName(PROXYIP_SPIDER_TASKER_THREAD_NAME);
+            thread.start();
+        } else {
+            LOGGER.info(logPreStr + "[代理ip爬虫线程]已经启动或尚未结束!请勿重复调用！");
+        }
+    }
 
-            } else {
-                LOGGER.info(logPreStr + "[代理ip爬虫线程]已经启动或尚未结束!请勿重复调用！");
-            }
-        });
-        thread.setName(PROXYIP_SPIDER_TASKER_THREAD_NAME);
-        thread.start();
-	}
+    /**
+     * 开始爬取任务
+     *
+     * @param proxyipSiteEnum
+     * @author zhangyl
+     * @created 2017年7月5日 下午5:13:30
+     */
+    public void startSpiderTasker(ProxyipSiteEnum proxyipSiteEnum) {
 
-	/**
-	 *
-	 * 开始爬取任务
-	 *
-	 * @author zhangyl
-	 * @created 2017年7月5日 下午5:13:30
-	 *
-	 * @param proxyipSiteEnum
-	 */
-	public void startSpiderTasker(ProxyipSiteEnum proxyipSiteEnum) {
+        String siteName = null;
+        String url = null;
+        PageProcessor pageProcessor = null;
 
-		String siteName = null;
-		String url = null;
-		PageProcessor pageProcessor = null;
-
-		try {
-			siteName = proxyipSiteEnum.getSiteName();
-			url = proxyipSiteEnum.getUrl();
-			pageProcessor = PageProcessorFactory.createPageProcessor(proxyipSiteEnum);
+        try {
+            siteName = proxyipSiteEnum.getSiteName();
+            url = proxyipSiteEnum.getUrl();
+            pageProcessor = PageProcessorFactory.createPageProcessor(proxyipSiteEnum);
 
             LOGGER.info(logPreStr + "开始爬取：网站={} url={} 代理数量={} 代理={}", siteName, url, proxysList.size(), proxysList);
 
-		    // Spider开始爬取
-			Spider.create(pageProcessor)
-				.addUrl(url)
-				.addPipeline(proxyipPipeline)
-				.setDownloader(simpleHttpClientDownloader)
-				.thread(1)
-				.run();
-		} catch (Exception e) {
+            // Spider开始爬取
+            Spider.create(pageProcessor)
+                    .addUrl(url)
+                    .addPipeline(proxyipPipeline)
+                    .setDownloader(simpleHttpClientDownloader)
+                    .thread(1)
+                    .run();
+        } catch (Exception e) {
             LOGGER.error(logPreStr + "发生异常：网站={} url={} pageProcessor={} exception,e={}", siteName, url, pageProcessor, e);
-		}
-	}
-
+        }
+    }
 
 
 }

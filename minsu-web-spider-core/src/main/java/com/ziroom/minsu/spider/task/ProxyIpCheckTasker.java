@@ -43,18 +43,18 @@ public class ProxyIpCheckTasker {
     private NetProxyIpPortMapper netProxyIpPortMapper;
 
     public void runAsyncCheck() {
-        Thread thread = new Thread(() -> {
-            if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME)) {
-                LOGGER.info(logPreStr + "[代理ip检测线程]启动！");
+        if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME)) {
+            LOGGER.info(logPreStr + "[代理ip检测线程]启动！");
+            Thread thread = new Thread(() -> {
                 checkProxyIpAvailable();
                 // 删除锁
                 redisService.releaseDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME);
-            } else {
-                LOGGER.info(logPreStr + "[代理ip检测线程]已经启动或尚未结束!请勿重复调用！");
-            }
-        });
-        thread.setName(PROXYIP_CHECK_TASKER_THREAD_NAME);
-        thread.start();
+            });
+            thread.setName(PROXYIP_CHECK_TASKER_THREAD_NAME);
+            thread.start();
+        } else {
+            LOGGER.info(logPreStr + "[代理ip检测线程]已经启动或尚未结束!请勿重复调用！");
+        }
     }
 
     /**
@@ -85,7 +85,7 @@ public class ProxyIpCheckTasker {
                         LOGGER.info(logPreStr + "[代理ip检测]该ip可用！ip:{},port:{}", netProxyIpPort.getProxyIp(), netProxyIpPort.getProxyPort());
                         isValid = 1;
                     }
-                    if(isValid != netProxyIpPort.getIsValid()){
+                    if (isValid != netProxyIpPort.getIsValid()) {
                         netProxyIpPort.setIsValid(isValid);
                         netProxyIpPortMapper.updateByPrimaryKeySelective(netProxyIpPort);
                     }
