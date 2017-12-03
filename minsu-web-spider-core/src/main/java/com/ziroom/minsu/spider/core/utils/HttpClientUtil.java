@@ -2,21 +2,26 @@ package com.ziroom.minsu.spider.core.utils;
 
 import com.ziroom.minsu.spider.domain.constant.HttpConstant;
 import org.apache.http.*;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +52,8 @@ public class HttpClientUtil {
      * @return
      */
     public static String sendProxyGet(String url,Map<String,String> headerMap,String ip,int port) throws IOException{
-            RequestConfig defaultConfig = getRequestConfig(null, 0);
             //设置默认配置
-            CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(defaultConfig).build();
+            CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(getHttpRequestRetryHandler()).build();
             HttpGet httpGet = new HttpGet(url);
             //直接在这个位置设置userAgent
             headerMap.put("User-Agent",CalendarDataUtil.getUserAgent());
@@ -175,6 +179,35 @@ public class HttpClientUtil {
         return builder.build();
     }
 
+    private static HttpRequestRetryHandler getHttpRequestRetryHandler(){
+        HttpRequestRetryHandler httpRequestRetryHandler = (exception, executionCount, context) -> {
+            if (executionCount > 1) {// 如果已经重试了1次，就放弃
+                return false;
+            }
+            if (exception instanceof NoHttpResponseException) {// 如果服务器丢掉了连接，那么就重试
+                return true;
+            }
+            if (exception instanceof SSLHandshakeException) {// 不要重试SSL握手异常
+                return false;
+            }
+            if (exception instanceof InterruptedIOException) {// 超时
+                return false;
+            }
+            if (exception instanceof UnknownHostException) {// 目标服务器不可达
+                return false;
+            }
+            if (exception instanceof ConnectTimeoutException) {// 连接被拒绝
+                return false;
+            }
+            if (exception instanceof SSLException) {// SSL握手异常
+                return false;
+            }
+
+            return false;
+        };
+        return httpRequestRetryHandler;
+    }
+
     /**
      * @description: 判断代理ip 是否可用
      * @author: lusp
@@ -184,7 +217,7 @@ public class HttpClientUtil {
      */
     public static boolean checkProxyIp(String url, String ip, int port) {
         boolean flag = false;
-        CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(new DefaultHttpRequestRetryHandler(0, false)).build();
+        CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(getHttpRequestRetryHandler()).build();
         HttpGet httpGet = new HttpGet(url);
         RequestConfig requestConfig = getRequestConfig(ip, port);
         httpGet.setConfig(requestConfig);
