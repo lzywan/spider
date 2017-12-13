@@ -85,8 +85,6 @@ public class ProxyipSpiderTasker {
                     startSpiderTasker(ProxyipSiteEnum.IP_181_DAILI);
                     startSpiderTasker(ProxyipSiteEnum.XICI_DAILI);
 
-                    // 删除锁
-                    redisService.releaseDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME);
                 } else {
                     LOGGER.error(logPreStr + "无可用ip");
                 }
