@@ -1,7 +1,12 @@
 package com.ziroom.minsu.spider.task;
 
+import com.asura.framework.base.util.Check;
+import com.asura.framework.base.util.JsonEntityTransform;
+import com.asura.framework.utils.LogUtil;
+import com.ziroom.minsu.services.common.sms.base.BaseMessage;
+import com.ziroom.minsu.services.common.sms.base.SmsMessage;
+import com.ziroom.minsu.services.common.utils.CloseableHttpUtil;
 import com.ziroom.minsu.spider.core.utils.HttpClientUtil;
-import com.ziroom.minsu.spider.service.RedisService;
 import com.ziroom.minsu.spider.core.utils.ValueUtil;
 import com.ziroom.minsu.spider.domain.NetProxyIpPort;
 import com.ziroom.minsu.spider.domain.constant.HttpConstant;
@@ -9,9 +14,12 @@ import com.ziroom.minsu.spider.mapper.NetProxyIpPortMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>ProxyIpCheckTasker</p>
@@ -36,25 +44,39 @@ public class ProxyIpCheckTasker {
 
     private static final String PROXYIP_CHECK_TASKER_THREAD_NAME = "PROXYIP_CHECK_TASKER_THREAD_NAME-";
 
-    @Autowired
-    private RedisService redisService;
+    @Value("${sms.send.url}")
+    private String smsSendUrl;
+
+    @Value("${sms.token}")
+    private String smsToken;
 
     @Autowired
     private NetProxyIpPortMapper netProxyIpPortMapper;
 
+    /**
+     * 电话
+     * 张少斌，杨东，张扬乐
+     */
+    private final String mobile = "15010386533,18701482472,18500866372";
+
     public void runAsyncCheck() {
-        if (redisService.getDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME)) {
-            LOGGER.info(logPreStr + "[代理ip检测线程]启动！");
-            Thread thread = new Thread(() -> {
-                checkProxyIpAvailable();
-                // 删除锁
-                redisService.releaseDistributedLock(PROXYIP_CHECK_TASKER_THREAD_NAME);
-            });
-            thread.setName(PROXYIP_CHECK_TASKER_THREAD_NAME);
-            thread.start();
-        } else {
-            LOGGER.info(logPreStr + "[代理ip检测线程]已经启动或尚未结束!请勿重复调用！");
-        }
+        LOGGER.info(logPreStr + "[代理ip检测线程]启动！");
+        Thread thread = new Thread(() -> {
+            checkProxyIpAvailable();
+            LOGGER.info(logPreStr + "[代理ip检测线程]执行结束!");
+
+            Calendar c = Calendar.getInstance();
+            if (c.get(Calendar.HOUR_OF_DAY) >= 9 && c.get(Calendar.HOUR_OF_DAY) < 18) {
+                List<NetProxyIpPort> list = netProxyIpPortMapper.listNetProxyIp();
+                if (list.size() < 50) {
+                    SmsMessage smsMessage = new SmsMessage(mobile, "爬虫库里可用代理ip数量：" + list.size());
+                    smsMessage.setToken(smsToken);
+                    sendMessage(smsMessage);
+                }
+            }
+        });
+        thread.setName(PROXYIP_CHECK_TASKER_THREAD_NAME);
+        thread.start();
     }
 
     /**
@@ -67,11 +89,11 @@ public class ProxyIpCheckTasker {
      */
     private void checkProxyIpAvailable() {
         try {
-            int count = netProxyIpPortMapper.countNetProxyIp();
+            int count = netProxyIpPortMapper.countCheckNetProxyIp();
             int page = ValueUtil.getPage(count, HttpConstant.page_num);
             for (int i = 1; i <= page; i++) {
                 LOGGER.info(logPreStr + "[代理ip检测],当前扫描到第 " + i + " 页,共 " + count + " 条数据,每页100条数据...");
-                List<NetProxyIpPort> netProxyIpPorts = netProxyIpPortMapper.selectNetProxyIpByPage(i, HttpConstant.page_num);
+                List<NetProxyIpPort> netProxyIpPorts = netProxyIpPortMapper.selectCheckNetProxyIpByPage(i, HttpConstant.page_num);
                 if (netProxyIpPorts == null || netProxyIpPorts.size() == 0) {
                     break;
                 }
@@ -95,8 +117,27 @@ public class ProxyIpCheckTasker {
         } catch (Exception e) {
             LOGGER.error(logPreStr + "[代理ip检测]异常,e:{}", e);
         }
-
     }
 
 
+    /**
+     * 发送短信
+     *
+     * @param
+     * @return
+     * @author zhangyl2
+     * @created 2017年12月13日 16:21
+     */
+    private void sendMessage(BaseMessage baseMessage) {
+
+        if (Check.NuNObj(baseMessage) || Check.NuNStr(baseMessage.getContent())) {
+            return;
+        }
+
+        Map<String, String> param = (Map<String, String>) JsonEntityTransform.json2Map(JsonEntityTransform.Object2Json(baseMessage));
+        LogUtil.info(LOGGER, "信息发送地址url=[" + smsSendUrl + "]");
+        String resData = CloseableHttpUtil.sendPost(smsSendUrl, JsonEntityTransform.Object2Json(param));
+        LogUtil.info(LOGGER, "短信接口返回数据resData=[" + resData + "]", resData);
+
+    }
 }

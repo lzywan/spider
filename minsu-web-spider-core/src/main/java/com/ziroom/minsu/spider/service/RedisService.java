@@ -28,36 +28,43 @@ public class RedisService {
      * @created 2017年11月17日 11:46
      */
     public boolean getDistributedLock(String key) {
+        try {
+            String lockKey = generateLockKey(key);
+            long now = System.currentTimeMillis();
 
-        String lockKey = generateLockKey(key);
-        long now = System.currentTimeMillis();
+            // setNX
+            // 仅当key不存在时设置成功
+            if (redisTemplate.getConnectionFactory()
+                    .getConnection()
+                    .setNX(lockKey.getBytes(), String.valueOf(now + MAX_WAIT_LOCK_TIME_OUT * 1000).getBytes())) {
 
-        // setNX
-        // 仅当key不存在时设置成功
-        if (redisTemplate.getConnectionFactory()
-                .getConnection()
-                .setNX(lockKey.getBytes(), String.valueOf(now + MAX_WAIT_LOCK_TIME_OUT * 1000).getBytes())) {
+                LOGGER.info("add RedisLock[" + lockKey + "]");
+                return true;
 
-            LOGGER.info("add RedisLock[" + lockKey + "]");
-            return true;
+            } else {
+                // key存在
+                Object o = redisTemplate.opsForValue().get(lockKey);
+                // 判断是否过期
+                if (!Check.NuNObj(o) && Long.parseLong(o.toString()) < now) {
+                    byte[] bytes = redisTemplate.getConnectionFactory()
+                            .getConnection()
+                            .getSet(lockKey.getBytes(), String.valueOf(now + MAX_WAIT_LOCK_TIME_OUT * 1000).getBytes());
 
-        } else {
-            // key存在
-            Object o = redisTemplate.opsForValue().get(lockKey);
-            // 判断是否过期
-            if (!Check.NuNObj(o) && Long.parseLong(o.toString()) < now) {
-                byte[] bytes = redisTemplate.getConnectionFactory()
-                        .getConnection()
-                        .getSet(lockKey.getBytes(), String.valueOf(now + MAX_WAIT_LOCK_TIME_OUT * 1000).getBytes());
+                    String originValue = Check.NuNObj(bytes) ? null : new String(bytes);
 
-                String originValue = Check.NuNObj(bytes) ? null : new String(bytes);
+                    // 这里存在并发情况，比较获取的原始值与getSet返回值相等，则才能获取锁
+                    if (o.toString().equals(originValue)) {
+                        LOGGER.info("get RedisLock[" + lockKey + "]");
+                        return true;
+                    }
 
-                // 这里存在并发情况，比较获取的原始值与getSet返回值相等，则才能获取锁
-                if (o.toString().equals(originValue)) {
-                    return true;
                 }
-
             }
+
+            LOGGER.info("don't get RedisLock[" + key + "]");
+
+        }catch (Exception e) {
+            LOGGER.error("getDistributedLock key={}, error={}", key, e);
         }
 
         return false;

@@ -94,6 +94,10 @@ public class AsyncCalendarServiceImpl implements AsyncCalendarService {
                 }
             }
 
+        }
+
+        // 本页数据的最终失败数
+        if (!Check.NuNCollection(asyncRetryPool)){
             LOGGER.error(logPreStr + "[最终同步失败]数量={}，房源={}", asyncRetryPool.size(), asyncRetryPool);
         }
     }

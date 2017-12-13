@@ -61,14 +61,14 @@ public class SyncCalendarTasker {
      * @created 2017年11月16日 16:40
      */
     public void runAsyncCalendar() {
-        if (redisService.getDistributedLock(SYNC_CALENDAR_TASKER_THREAD_NAME)) {
+//        if (redisService.getDistributedLock(SYNC_CALENDAR_TASKER_THREAD_NAME)) {
             LOGGER.info(logPreStr + "[同步房源日历线程]启动！");
             Thread thread = new Thread(() -> startSyncCalendarTasker());
             thread.setName(SYNC_CALENDAR_TASKER_THREAD_NAME);
             thread.start();
-        } else {
-            LOGGER.info(logPreStr + "[同步房源日历线程]已经启动或尚未结束!请勿重复调用！");
-        }
+//        } else {
+//            LOGGER.info(logPreStr + "[同步房源日历线程]已经启动或尚未结束!请勿重复调用！");
+//        }
     }
 
     public void startSyncCalendarTasker() {

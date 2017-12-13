@@ -20,6 +20,9 @@
     </parent>
 
     <properties>
+        <!-- minsu 项目版本 -->
+        <minsu.service.version>${deploy.type}-0.0.1</minsu.service.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
@@ -35,6 +38,13 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.ziroom.minsu</groupId>
+            <artifactId>minsu-service-common</artifactId>
+            <version>${minsu.service.version}</version>
+        </dependency>
+
         <!--springboot-starter 相关-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -158,4 +168,30 @@
             <version>4.1</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <deploy.type>dev</deploy.type>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>test</id>
+            <properties>
+                <deploy.type>test</deploy.type>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>online</id>
+            <properties>
+                <deploy.type>online</deploy.type>
+            </properties>
+        </profile>
+    </profiles>
 </project>

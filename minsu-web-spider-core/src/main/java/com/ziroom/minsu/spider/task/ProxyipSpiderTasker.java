@@ -63,7 +63,7 @@ public class ProxyipSpiderTasker {
      * @created 2017年7月10日 下午7:21:29
      */
     public void runAsyncSpider() {
-        if (redisService.getDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME)) {
+//        if (redisService.getDistributedLock(PROXYIP_SPIDER_TASKER_THREAD_NAME)) {
             LOGGER.info(logPreStr + "[代理ip爬虫线程]启动！");
             Thread thread = new Thread(() -> {
                 // 设置库里可用的ip做代理池
@@ -93,9 +93,9 @@ public class ProxyipSpiderTasker {
             });
             thread.setName(PROXYIP_SPIDER_TASKER_THREAD_NAME);
             thread.start();
-        } else {
-            LOGGER.info(logPreStr + "[代理ip爬虫线程]已经启动或尚未结束!请勿重复调用！");
-        }
+//        } else {
+//            LOGGER.info(logPreStr + "[代理ip爬虫线程]已经启动或尚未结束!请勿重复调用！");
+//        }
     }
 
     /**
