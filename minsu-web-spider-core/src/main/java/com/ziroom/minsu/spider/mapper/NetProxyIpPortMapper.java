@@ -11,9 +11,15 @@ public interface NetProxyIpPortMapper {
 
     List<NetProxyIpPort> listNetProxyIp();
 
+<<<<<<< HEAD
     int countNetProxyIp();
 
     List<NetProxyIpPort> selectNetProxyIpByPage(@Param("pageNum") int pageNum, @Param("pageSize") int pageSize);
+=======
+    int countCheckNetProxyIp();
+
+    List<NetProxyIpPort> selectCheckNetProxyIpByPage(@Param("pageNum") int pageNum, @Param("pageSize") int pageSize);
+>>>>>>> test
 
     int updateByPrimaryKeySelective(NetProxyIpPort netProxyIpPort);
 

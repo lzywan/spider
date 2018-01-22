@@ -1,5 +1,6 @@
 package com.ziroom.minsu.spider.config.mq;
 
+<<<<<<< HEAD
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -7,6 +8,18 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+=======
+import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.Queue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
+
+
+>>>>>>> test
 /**
  * <p>TODO</p>
  * <p>
@@ -24,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMqConfiguration {
 
+<<<<<<< HEAD
     final static String queueName = "minsu_order_syncLock";
 
     @Bean
@@ -32,5 +46,24 @@ public class RabbitMqConfiguration {
     }
 
 
+=======
+    public static String lockMqName;
+
+    @Autowired
+    private AmqpAdmin amqpAdmin;
+
+    @Value("${order.lock.mq.name}")
+    public void setLockMqName(String lockMqName) {
+        this.lockMqName = lockMqName;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (amqpAdmin.getQueueProperties(lockMqName) == null) {
+            Queue queue = new Queue(lockMqName);
+            amqpAdmin.declareQueue(queue);
+        }
+    }
+>>>>>>> test
 
 }

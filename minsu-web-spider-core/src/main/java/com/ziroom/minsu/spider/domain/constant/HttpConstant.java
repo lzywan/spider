@@ -39,6 +39,7 @@ public class HttpConstant {
     public static int connection_request_time_out = 5000;
 
     /**
+<<<<<<< HEAD
      * 调用httpclient线程超时时间
      */
     public static int httpclient_tread_time_out = 6000;
@@ -47,6 +48,11 @@ public class HttpConstant {
      * 验证代理ip是否可用的访问地址
      */
     public static String airbnbUrl = "https://www.airbnbchina.cn/";
+=======
+     * 验证代理ip是否可用的访问地址
+     */
+    public static String airbnbUrl = "https://zh.airbnb.com/";
+>>>>>>> test
 
 
     /**

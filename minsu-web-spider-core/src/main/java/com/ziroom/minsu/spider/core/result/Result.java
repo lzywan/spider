@@ -1,6 +1,9 @@
 package com.ziroom.minsu.spider.core.result;
 
+<<<<<<< HEAD
 import com.alibaba.fastjson.JSON;
+=======
+>>>>>>> test
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 

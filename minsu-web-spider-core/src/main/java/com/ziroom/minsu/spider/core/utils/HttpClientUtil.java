@@ -1,16 +1,25 @@
 package com.ziroom.minsu.spider.core.utils;
 
 import com.ziroom.minsu.spider.domain.constant.HttpConstant;
+<<<<<<< HEAD
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+=======
+import org.apache.http.*;
+import org.apache.http.client.HttpRequestRetryHandler;
+>>>>>>> test
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+<<<<<<< HEAD
+=======
+import org.apache.http.conn.ConnectTimeoutException;
+>>>>>>> test
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -18,9 +27,18 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+<<<<<<< HEAD
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+=======
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+>>>>>>> test
 import java.util.List;
 import java.util.Map;
 
@@ -50,9 +68,14 @@ public class HttpClientUtil {
      * @return
      */
     public static String sendProxyGet(String url,Map<String,String> headerMap,String ip,int port) throws IOException{
+<<<<<<< HEAD
             RequestConfig defaultConfig = getRequestConfig(null, 0);
             //设置默认配置
             CloseableHttpClient httpclient = HttpClients.custom().setDefaultRequestConfig(defaultConfig).build();
+=======
+            //设置默认配置
+            CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(getHttpRequestRetryHandler()).build();
+>>>>>>> test
             HttpGet httpGet = new HttpGet(url);
             //直接在这个位置设置userAgent
             headerMap.put("User-Agent",CalendarDataUtil.getUserAgent());
@@ -178,6 +201,38 @@ public class HttpClientUtil {
         return builder.build();
     }
 
+<<<<<<< HEAD
+=======
+    private static HttpRequestRetryHandler getHttpRequestRetryHandler(){
+        HttpRequestRetryHandler httpRequestRetryHandler = (exception, executionCount, context) -> {
+            if (executionCount > 1) {// 如果已经重试了1次，就放弃
+                return false;
+            }
+            if (exception instanceof NoHttpResponseException) {// 如果服务器丢掉了连接，那么就重试
+                return true;
+            }
+            if (exception instanceof SSLHandshakeException) {// 不要重试SSL握手异常
+                return false;
+            }
+            if (exception instanceof InterruptedIOException) {// 超时
+                return false;
+            }
+            if (exception instanceof UnknownHostException) {// 目标服务器不可达
+                return false;
+            }
+            if (exception instanceof ConnectTimeoutException) {// 连接被拒绝
+                return false;
+            }
+            if (exception instanceof SSLException) {// SSL握手异常
+                return false;
+            }
+
+            return false;
+        };
+        return httpRequestRetryHandler;
+    }
+
+>>>>>>> test
     /**
      * @description: 判断代理ip 是否可用
      * @author: lusp
@@ -187,19 +242,33 @@ public class HttpClientUtil {
      */
     public static boolean checkProxyIp(String url, String ip, int port) {
         boolean flag = false;
+<<<<<<< HEAD
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(url);
         RequestConfig requestConfig = getRequestConfig(ip,port);
+=======
+        CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(getHttpRequestRetryHandler()).build();
+        HttpGet httpGet = new HttpGet(url);
+        RequestConfig requestConfig = getRequestConfig(ip, port);
+>>>>>>> test
         httpGet.setConfig(requestConfig);
         CloseableHttpResponse response = null;
         try {
             response = httpclient.execute(httpGet);
             int status = response.getStatusLine().getStatusCode();
+<<<<<<< HEAD
             if(status>= HttpStatus.SC_OK&&status<=HttpStatus.SC_MULTIPLE_CHOICES){
                 flag = true;
             }
         } catch (IOException e) {
             LOGGER.info("【checkProxyIp】该代理ip地址不可用,ip:{},port:{}",ip,port);
+=======
+            if (status >= HttpStatus.SC_OK && status <= HttpStatus.SC_MULTIPLE_CHOICES) {
+                flag = true;
+            }
+        } catch (IOException e) {
+            LOGGER.info("【checkProxyIp】该代理ip地址不可用,ip:{},port:{}", ip, port);
+>>>>>>> test
         } finally {
             if (response != null) {
                 try {
@@ -214,6 +283,7 @@ public class HttpClientUtil {
 
     public static void main(String[] args) {
 
+<<<<<<< HEAD
         Map<String,String> paramMap = new HashMap<>();
         paramMap.put("User-Agent","Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3");
         String s = null;
@@ -224,6 +294,43 @@ public class HttpClientUtil {
             LOGGER.info("io");
         }
         System.err.println(s);
+=======
+//        Map<String,String> paramMap = new HashMap<>();
+//        paramMap.put("User-Agent","Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3");
+//        String s = null;
+//        try {
+//            s = sendProxyGet("https://zh.airbnb.com/calendar/ical/19534577.ics?s=bc0b6fc6173428bc097d42526fc75988", paramMap, "121.31.150.25", 8123);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            LOGGER.info("io");
+//        }
+//        System.err.println(s);
+
+        List<Boolean> list = new ArrayList<>();
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "183.221.245.207", 80));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "182.234.7.94", 8888));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "114.24.112.55", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "218.87.170.179", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "101.4.60.50", 80));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "140.124.72.74", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "1.163.88.127", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "112.192.234.123", 8088));
+        list.add(checkProxyIp(HttpConstant.airbnbUrl, "111.252.50.214", 8088));
+
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+        System.out.println();
+
+        for (Boolean b : list){
+            System.out.println(b);
+        }
+>>>>>>> test
 
 
     }

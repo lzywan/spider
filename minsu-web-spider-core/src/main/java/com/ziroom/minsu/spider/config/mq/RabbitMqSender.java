@@ -3,6 +3,10 @@ package com.ziroom.minsu.spider.config.mq;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.ziroom.minsu.spider.core.result.Result;
+<<<<<<< HEAD
+=======
+import com.ziroom.minsu.spider.core.utils.Check;
+>>>>>>> test
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,8 +31,15 @@ public class RabbitMqSender {
     @Autowired
     private AmqpTemplate template;
 
+<<<<<<< HEAD
     public void send(Result msg){
         template.convertAndSend(RabbitMqConfiguration.queueName, JSONObject.toJSONString(msg, SerializerFeature.WriteMapNullValue));
+=======
+    public void send(String queueName, Result msg){
+        if(!Check.NuNStr(queueName)){
+            template.convertAndSend(queueName, JSONObject.toJSONString(msg, SerializerFeature.WriteMapNullValue));
+        }
+>>>>>>> test
     }
 
 }
